@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同律 CONCORD · 律学交互实验室</title>
+<meta name="app-version" content="1.0.0">
+<meta name="description" content="《同律》CONCORD：一个八度必须切成 12 个半音，用简单分数永远无法闭合——差 23.46 音分。可听化律学交互实验室：三分损益、朱载堉新法密率 2^(1/12)、世界律制，全部可复算、可复听、纯离线单页。">
+<meta name="theme-color" content="#0B0D10">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main" data-i18n="a11y.skip">跳到主要内容</a>
+
+<!-- 阅读进度条 -->
+<div class="read-progress" role="presentation" aria-hidden="true">
+  <div class="read-progress-bar" id="progressBar"></div>
+</div>
+
+<!-- ============================ 顶栏 ============================ -->
+<header class="topbar" role="banner">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="26" height="26" focusable="false">
+        <circle cx="16" cy="16" r="13.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".55"/>
+        <circle cx="16" cy="16" r="8.6" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".8"/>
+        <circle cx="16" cy="16" r="2.1" fill="currentColor"/>
+        <path d="M16 2.6v3.1M16 26.3v3.1M2.6 16h3.1M26.3 16h3.1" stroke="currentColor" stroke-width="1.1"/>
+        <path d="M21.4 6.2 18.6 10.4M6.2 25.8l2.8-4.2" stroke="currentColor" stroke-width="1.1" opacity=".7"/>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <b data-i18n="nav.brand">同律</b>
+      <small data-i18n="nav.brandSub">CONCORD</small>
+    </span>
+  </div>
+
+  <nav class="module-nav" aria-label="模块导航" data-i18n-aria="a11y.mainNav">
+    <button type="button" class="nav-btn" data-module-target="m1" data-i18n="nav.m1">序章</button>
+    <button type="button" class="nav-btn" data-module-target="m2" data-i18n="nav.m2">律尺</button>
+    <button type="button" class="nav-btn" data-module-target="m3" data-i18n="nav.m3">三分损益</button>
+    <button type="button" class="nav-btn" data-module-target="m4" data-i18n="nav.m4">密率</button>
+    <button type="button" class="nav-btn" data-module-target="m5" data-i18n="nav.m5">世界律制</button>
+    <button type="button" class="nav-btn" data-module-target="m6" data-i18n="nav.m6">编钟与琴</button>
+    <button type="button" class="nav-btn" data-module-target="m7" data-i18n="nav.m7">律与器</button>
+    <button type="button" class="nav-btn" data-module-target="m8" data-i18n="nav.m8">方法与证据</button>
+  </nav>
+
+  <div class="topbar-tools">
+    <button type="button" class="tool-btn" id="soundToggle" aria-pressed="false" data-i18n-aria="a11y.playGroup">
+      <span class="tool-ico" aria-hidden="true">◍</span>
+      <span class="tool-label" data-i18n="ui.stopAllShort">静音</span>
+    </button>
+    <div class="lang-switch" role="group" aria-label="Language" data-i18n-aria="a11y.langGroup">
+      <button type="button" data-lang-toggle="zh" aria-pressed="true" lang="zh-CN">中文</button>
+      <button type="button" data-lang-toggle="en" aria-pressed="false" lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================ 封面 ============================ -->
+  <section class="cover" id="cover">
+    <div class="cover-grid" aria-hidden="true">
+      <svg viewBox="0 0 1200 620" preserveAspectRatio="xMidYMid slice" focusable="false">
+        <g id="coverLines" fill="none" stroke="currentColor"></g>
+      </svg>
+    </div>
+    <div class="cover-inner">
+      <p class="cover-kicker" data-i18n="meta.kicker">律学交互实验室 · 可听化 · 可复算</p>
+      <h1 class="cover-title">
+        <span class="cover-zh" data-i18n="nav.brand">同律</span>
+        <span class="cover-en" data-i18n="nav.brandSub">CONCORD</span>
+      </h1>
+      <p class="cover-sub" data-i18n="meta.subtitle">一个八度的两种解法 —— 十二平均律的东西方之路</p>
+      <p class="cover-sub-en" data-i18n="meta.subtitleEn">One Octave, Two Solutions: The Eastern and Western Roads to Twelve-Tone Equal Temperament</p>
+      <p class="cover-intro" data-i18n="meta.intro">一个八度必须切成 12 个半音。用简单分数一路叠下去，数学上永远回不到起点——差 23.46 音分。</p>
+      <div class="cover-gap" role="img" aria-label="23.46 cents gap">
+        <span class="cover-gap-num">23.46</span>
+        <span class="cover-gap-unit" data-i18n="ui.centsShort">¢</span>
+      </div>
+      <p class="cover-hint" data-i18n="meta.introHint">建议顺序：先听见那不闭合的 23.46 音分，再看两个文明怎样各自解开它。</p>
+      <div class="cover-cta">
+        <button type="button" class="btn btn-gold" id="coverStart" data-i18n="nav.m1">序章</button>
+        <span class="cover-total" id="coverTotal"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ M1 ============================ -->
+  <section id="m1" class="mod" data-module="m1" aria-labelledby="m1-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m1.kicker">模块 01 · 问题</p>
+      <h2 class="mod-title" id="m1-h" data-i18n="m1.title">序章 · 不闭合的八度</h2>
+      <p class="mod-title-en" data-i18n="m1.titleEn">Prologue · The Octave That Will Not Close</p>
+      <p class="mod-lead" data-i18n="m1.lead">把 12 个纯五度首尾相接……</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m1.demoTitle">两条链，同一个终点？</h3>
+        <p class="panel-desc" data-i18n="m1.demoDesc">左链每步乘 3/2，右链每步乘 2。</p>
+        <div class="viz-slot viz-tall" id="viz-m1" data-viz="spiral5th" data-viz-height="380" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-gold" id="m1-step" data-i18n="m1.stepBtn">叠一个五度</button>
+          <button type="button" class="btn" id="m1-run" data-i18n="m1.run12">走完 12 步</button>
+          <button type="button" class="btn" id="m1-reset" data-i18n="m1.reset">回到起点</button>
+          <button type="button" class="btn btn-cyan" id="m1-play" data-i18n="m1.playCompare">播放对比</button>
+          <button type="button" class="btn btn-cyan" id="m1-beat" data-i18n="m1.playBeat">播放拍音</button>
+        </div>
+        <p class="inline-hint" data-i18n="m1.hintPlay">声音需要你先点一下按钮才会响。</p>
+        <div class="readouts">
+          <h4 class="readouts-title" data-i18n="a11y.readouts">实时读数</h4>
+          <dl class="readout-grid" id="m1-readouts"></dl>
+        </div>
+      </div>
+      <aside class="panel panel-note">
+        <h3 class="panel-title" data-i18n="m1.explainTitle">这不是计算误差</h3>
+        <p class="note-body" data-i18n="m1.explain">3 是质数，2 也是质数……</p>
+        <p class="note-eq" aria-label="3^12 / 2^19"><span data-i18n="m1.explainEq">3¹²/2¹⁹</span></p>
+      </aside>
+    </div>
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m1-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M2 ============================ -->
+  <section id="m2" class="mod" data-module="m2" aria-labelledby="m2-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m2.kicker">模块 02 · 一根弦</p>
+      <h2 class="mod-title" id="m2-h" data-i18n="m2.title">律尺 · 一根弦上的宇宙</h2>
+      <p class="mod-title-en" data-i18n="m2.titleEn">The Ruler · A Universe on One String</p>
+      <p class="mod-lead" data-i18n="m2.lead">调音最原始的仪器是一根弦。</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m2.demoTitle">可移动的琴码</h3>
+        <p class="panel-desc" data-i18n="m2.demoDesc">拖动琴码改变被截取的弦长。</p>
+        <div class="viz-slot" id="viz-m2" data-viz="monochord" data-viz-height="300" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="ctrl">
+          <label class="ctrl-label" for="m2-slider">
+            <span data-i18n="m2.sliderLabel">弦长比</span>
+            <output id="m2-out" for="m2-slider">0.75</output>
+          </label>
+          <input type="range" id="m2-slider" min="50" max="100" step="1" value="75"
+                 aria-describedby="m2-presets-hint">
+          <p class="inline-hint" id="m2-presets-hint" data-i18n="m2.presets">音程预设</p>
+          <div class="chips" id="m2-presets" role="group" data-i18n-aria="m2.presets"></div>
+        </div>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-cyan" id="m2-play" data-i18n="m2.playBoth">同时发声</button>
+        </div>
+        <div class="readouts">
+          <h4 class="readouts-title" data-i18n="a11y.readouts">实时读数</h4>
+          <dl class="readout-grid" id="m2-readouts"></dl>
+        </div>
+      </div>
+      <aside class="panel panel-note">
+        <h3 class="panel-title" data-i18n="m2.explainTitle">为什么是反比</h3>
+        <p class="note-body" data-i18n="m2.explain">频率 f = v/(2L)……</p>
+        <p class="note-eq" aria-label="cents formula"><span data-i18n="m2.explainEq">¢ = 1200·log₂(f₂/f₁)</span></p>
+      </aside>
+    </div>
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m2-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M3 ============================ -->
+  <section id="m3" class="mod" data-module="m3" aria-labelledby="m3-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m3.kicker">模块 03 · 中国解法之一</p>
+      <h2 class="mod-title" id="m3-h" data-i18n="m3.title">三分损益 · 五度圈走不到头</h2>
+      <p class="mod-title-en" data-i18n="m3.titleEn">Sanfen Sunyi · The Circle That Cannot Close</p>
+      <p class="mod-lead" data-i18n="m3.lead">中国古人用「三分损一、三分益一」交替生律。</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m3.demoTitle">一步一生律</h3>
+        <p class="panel-desc" data-i18n="m3.demoDesc">每点一次「生一律」，按《吕氏春秋》的次序再叠一个纯五度。</p>
+        <div class="viz-slot viz-tall" id="viz-m3" data-viz="spiral5th" data-viz-height="360" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-gold" id="m3-gen" data-i18n="m3.btnGen">生一律</button>
+          <button type="button" class="btn" id="m3-all" data-i18n="m3.btnGenAll">生成 12 律</button>
+          <button type="button" class="btn" id="m3-reset" data-i18n="m3.btnReset">重置</button>
+          <button type="button" class="btn btn-cyan" id="m3-wolf" data-i18n="m3.btnPlayWolf">播放狼音</button>
+          <button type="button" class="btn btn-cyan" id="m3-scale" data-i18n="m3.btnPlayScale">播放十二律</button>
+        </div>
+        <div class="table-wrap" role="region" tabindex="0" data-i18n-aria="m3.cellsLabel">
+          <table class="data-table" id="m3-table">
+            <caption class="sr-only" data-i18n="m3.cellsLabel">十二律表</caption>
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="m3.tableStep">步</th>
+                <th scope="col" data-i18n="m3.tableName">律名</th>
+                <th scope="col" data-i18n="m3.tableRatio">频率比</th>
+                <th scope="col" data-i18n="m3.tableHz">频率</th>
+                <th scope="col" data-i18n="m3.tableCents">音分</th>
+                <th scope="col" data-i18n="m3.tableDev">与平均律差</th>
+              </tr>
+            </thead>
+            <tbody id="m3-tbody"></tbody>
+          </table>
+        </div>
+        <div class="readouts">
+          <h4 class="readouts-title" data-i18n="a11y.readouts">实时读数</h4>
+          <dl class="readout-grid" id="m3-readouts"></dl>
+        </div>
+      </div>
+      <aside class="panel panel-note">
+        <h3 class="panel-title" data-i18n="m3.explainTitle">每一步都是 3/2</h3>
+        <p class="note-body" data-i18n="m3.explain">生律规则：×3/2 后若超过八度就除 2 折回。</p>
+        <h3 class="panel-title panel-title-sub" data-i18n="m3.wolfTitle">「狼音」是什么</h3>
+        <p class="note-body" data-i18n="m3.wolfDesc">为了迁就这个缺口，历史上各律制留下某个格外刺耳的音程。</p>
+      </aside>
+    </div>
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m3-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M4 ============================ -->
+  <section id="m4" class="mod" data-module="m4" aria-labelledby="m4-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m4.kicker">模块 04 · 中国解法之二</p>
+      <h2 class="mod-title" id="m4-h" data-i18n="m4.title">密率 · 1584 年的第十二根</h2>
+      <p class="mod-title-en" data-i18n="m4.titleEn">The Cipher Ratio · The Twelfth Root, 1584</p>
+      <p class="mod-lead" data-i18n="m4.lead">1584 年，朱载堉在《律学新说》中给出「新法密率」。</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m4.demoTitle">第十二根弦是怎么算出来的</h3>
+        <p class="panel-desc" data-i18n="m4.demoDesc">本页以平方根与立方根链演示与 2^(1/12) 等价的推导。</p>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-gold" id="m4-step" data-i18n="m4.stepBtn">下一步推导</button>
+          <button type="button" class="btn" id="m4-all" data-i18n="m4.showAll">显示全部推导</button>
+          <button type="button" class="btn" id="m4-reset" data-i18n="m4.resetDerivation">重新推导</button>
+        </div>
+        <ol class="deriv-list" id="m4-deriv"></ol>
+        <div class="check-box">
+          <h4 class="readouts-title" data-i18n="m4.powerTitle">闭合检验：12 次幂是否等于 2</h4>
+          <dl class="readout-grid" id="m4-power"></dl>
+        </div>
+      </div>
+      <aside class="panel panel-note">
+        <h3 class="panel-title" data-i18n="m4.litTitle">文献抄录值 vs 本页计算</h3>
+        <dl class="readout-grid" id="m4-lit"></dl>
+        <h3 class="panel-title panel-title-sub" data-i18n="m4.whyTitle">为什么开方就是解</h3>
+        <p class="note-body" data-i18n="m4.whyBody">若八度 = 2 倍频率，等分成 12 份。</p>
+      </aside>
+    </div>
+
+    <div class="mod-row">
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m4.timelineTitle">并行解题时间线</h3>
+        <div class="timeline" id="m4-timeline" role="region" tabindex="0" data-i18n-aria="m4.timelineTitle"></div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m4.abTitle">三种律制 A/B 听辨</h3>
+        <p class="panel-desc" data-i18n="m4.abDesc">同一段旋律（C–E–G–B–C），在三种律制下分别播放。</p>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn" id="m4-play-sanfen" data-i18n="m4.abSanfen">三分损益</button>
+          <button type="button" class="btn" id="m4-play-meantone" data-i18n="m4.abMeantone">中庸律</button>
+          <button type="button" class="btn" id="m4-play-tet" data-i18n="m4.abTet">十二平均律</button>
+        </div>
+        <p class="note-body" data-i18n="m4.honorNote">本节并列展示两条独立解题路径与可核验的数学结论。</p>
+      </div>
+    </div>
+
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m4-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M5 ============================ -->
+  <section id="m5" class="mod" data-module="m5" aria-labelledby="m5-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m5.kicker">模块 05 · 世界</p>
+      <h2 class="mod-title" id="m5-h" data-i18n="m5.title">世界律制 · 同一个八度，很多种切法</h2>
+      <p class="mod-title-en" data-i18n="m5.titleEn">World Tunings · One Octave, Many Cuts</p>
+      <p class="mod-lead" data-i18n="m5.lead">八度必须被切开，但怎么切没有唯一答案。</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m5.demoTitle">把律制摊开在同一把尺子上</h3>
+        <p class="panel-desc" data-i18n="m5.demoDesc">横轴是 0–1200 音分。</p>
+        <h4 class="viz-cap" data-i18n="m5.mapTitle">文化区域地图</h4>
+        <div class="viz-slot" id="viz-m5-map" data-viz="worldmap" data-viz-height="300" role="img" data-i18n-aria="a11y.chart"></div>
+        <p class="inline-hint" id="m5-map-info"></p>
+        <p class="inline-hint" data-i18n="m5.mapHint">点选区域查看该文化的律制与乐器。</p>
+        <div class="chips region-chips" id="m5-regions" role="group" data-i18n-aria="m5.listTitle"></div>
+        <div class="viz-slot" id="viz-m5" data-viz="centsRuler" data-viz-height="340" role="img" data-i18n-aria="a11y.chart"></div>
+        <p class="inline-hint" data-i18n="m5.rulerTitle">音分刻度尺</p>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <label class="inline-label" for="m5-a" data-i18n="ui.systemA">律制 A</label>
+          <select id="m5-a" class="select"></select>
+          <label class="inline-label" for="m5-b" data-i18n="ui.systemB">律制 B</label>
+          <select id="m5-b" class="select"></select>
+          <button type="button" class="btn btn-cyan" id="m5-play-a" data-i18n="m5.playAB">播放 A</button>
+          <button type="button" class="btn btn-cyan" id="m5-play-b" data-i18n="m5.playB">播放 B</button>
+        </div>
+        <p class="inline-hint" data-i18n="m4.abDesc">同一段旋律，只改变律制。</p>
+        <div class="readouts">
+          <h4 class="readouts-title" data-i18n="a11y.readouts">实时读数</h4>
+          <dl class="readout-grid" id="m5-readouts"></dl>
+        </div>
+      </div>
+      <aside class="panel panel-note">
+        <h3 class="panel-title" data-i18n="m5.listTitle">律制一览</h3>
+        <div class="sys-list" id="m5-list" role="group" data-i18n-aria="m5.listTitle"></div>
+        <p class="note-body note-warn" data-i18n="m5.pendingWarn">本表含文献参考值条目。</p>
+      </aside>
+    </div>
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m5-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M6 ============================ -->
+  <section id="m6" class="mod" data-module="m6" aria-labelledby="m6-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m6.kicker">模块 06 · 一件乐器</p>
+      <h2 class="mod-title" id="m6-h" data-i18n="m6.title">编钟与琴 · 一钟两音</h2>
+      <p class="mod-title-en" data-i18n="m6.titleEn">Bells and Zithers · Two Tones in One Bell</p>
+      <p class="mod-lead" data-i18n="m6.lead">曾侯乙编钟的每一件钟能发出两个音。</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m6.bellTitle">一钟双音</h3>
+        <p class="panel-desc" data-i18n="m6.bellDesc">点钟面上的两个敲击点。</p>
+        <div class="viz-slot" id="viz-m6" data-viz="bell" data-viz-height="320" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-gold" id="m6-front" data-i18n="m6.bellHitFront">敲正鼓部</button>
+          <button type="button" class="btn btn-gold" id="m6-side" data-i18n="m6.bellHitSide">敲侧鼓部</button>
+          <button type="button" class="btn btn-cyan" id="m6-both" data-i18n="m6.bellPlayBoth">两音对比</button>
+        </div>
+        <h4 class="viz-cap" data-i18n="m6.specTitle">频谱</h4>
+        <p class="panel-desc" data-i18n="m6.specDesc">把钟声拆成频率成分。</p>
+        <div class="viz-slot" id="viz-m6-spec" data-viz="spectrum" data-viz-height="220" role="img" data-i18n-aria="a11y.chart"></div>
+        <p class="note-body note-warn" data-i18n="m6.bellSource">测音结论学界有不同研究。</p>
+        <div class="readouts">
+          <h4 class="readouts-title" data-i18n="a11y.readouts">实时读数</h4>
+          <dl class="readout-grid" id="m6-readouts"></dl>
+        </div>
+      </div>
+
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m6.guqinTitle">古琴徽位与泛音列</h3>
+        <p class="panel-desc" data-i18n="m6.guqinDesc">在弦长的 1/2、1/3、1/4……处轻触并拨弦。</p>
+        <div class="viz-slot viz-hui" id="viz-m6-hui" data-viz="guqin" data-viz-height="120" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="chips" id="m6-hui" role="group" data-i18n-aria="m6.guqinHui"></div>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-cyan" id="m6-sweep" data-i18n="m6.guqinSweep">依次扫过全部徽位</button>
+        </div>
+        <div class="table-wrap" role="region" tabindex="0">
+          <table class="data-table" id="m6-table">
+            <caption class="sr-only" data-i18n="m6.guqinTitle">古琴徽位与泛音列</caption>
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="m6.guqinHui">徽位</th>
+                <th scope="col" data-i18n="m6.guqinRatio">弦长比</th>
+                <th scope="col" data-i18n="m6.guqinPartial">泛音序号</th>
+                <th scope="col" data-i18n="m6.guqinFreq">频率</th>
+                <th scope="col" data-i18n="m6.guqinCents">相对基音</th>
+              </tr>
+            </thead>
+            <tbody id="m6-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m6-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M7 ============================ -->
+  <section id="m7" class="mod" data-module="m7" aria-labelledby="m7-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m7.kicker">模块 07 · 器物</p>
+      <h2 class="mod-title" id="m7-h" data-i18n="m7.title">律与器 · 妥协的艺术</h2>
+      <p class="mod-title-en" data-i18n="m7.titleEn">Tuning and Instruments · The Art of Compromise</p>
+      <p class="mod-lead" data-i18n="m7.lead">乐器不会按理论长。</p>
+    </div>
+    <div class="mod-body">
+      <div class="panel panel-demo">
+        <h3 class="panel-title" data-i18n="m7.fretTitle">吉他品丝：平均律的物证</h3>
+        <p class="panel-desc" data-i18n="m7.fretDesc">第 n 品到琴枕的距离 dₙ = L·(1 − 2^(−n/12))。</p>
+        <div class="viz-slot" id="viz-m7" data-viz="fretboard" data-viz-height="260" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="chips" id="m7-frets" role="group" data-i18n-aria="m7.fretTitle"></div>
+        <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
+          <button type="button" class="btn btn-cyan" id="m7-et" data-i18n="m7.fretPlayET">按平均律弹这个音</button>
+          <button type="button" class="btn btn-cyan" id="m7-just" data-i18n="m7.fretPlayJust">按纯律弹这个音</button>
+        </div>
+        <div class="readouts">
+          <h4 class="readouts-title" data-i18n="a11y.readouts">实时读数</h4>
+          <dl class="readout-grid" id="m7-readouts"></dl>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m7.stretchTitle">钢琴调律曲线</h3>
+        <p class="panel-desc" data-i18n="m7.stretchDesc">实际钢琴调音时，高音区会比理论值偏高、低音区偏低。</p>
+        <div class="viz-slot" id="viz-m7-stretch" data-viz="stretch" data-viz-height="240" role="img" data-i18n-aria="a11y.chart"></div>
+        <p class="inline-hint" data-i18n="m7.stretchNote">示意曲线。</p>
+      </div>
+    </div>
+    <div class="panel panel-wide">
+      <h3 class="panel-title" data-i18n="m7.isochordTitle">同一把尺子上的偏离</h3>
+      <p class="panel-desc" data-i18n="m7.isochordDesc">把各律制的十二个音对十二平均律的偏差画成图。</p>
+      <div class="viz-slot" id="viz-m7-iso" data-viz="isochord" data-viz-height="260" role="img" data-i18n-aria="a11y.chart"></div>
+    </div>
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m7-figures"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ M8 ============================ -->
+  <section id="m8" class="mod" data-module="m8" aria-labelledby="m8-h">
+    <div class="mod-head">
+      <p class="mod-kicker" data-i18n="m8.kicker">模块 08 · 证据</p>
+      <h2 class="mod-title" id="m8-h" data-i18n="m8.title">方法与证据</h2>
+      <p class="mod-title-en" data-i18n="m8.titleEn">Method and Evidence</p>
+      <p class="mod-lead" data-i18n="m8.lead">这一节把页面上的每个数字都交出来。</p>
+    </div>
+
+    <div class="mod-row">
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m8.algoTitle">算法说明（摘要）</h3>
+        <ul class="plain-list">
+          <li data-i18n="m8.algoBody1">音分定义。</li>
+          <li data-i18n="m8.algoBody2">三分损益。</li>
+          <li data-i18n="m8.algoBody3">新法密率。</li>
+          <li data-i18n="m8.algoBody4">品丝位置与泛音列。</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m8.metricsTitle">本页可核验数字</h3>
+        <p class="panel-desc" data-i18n="m8.metricsNote">以下数字由页面运行时从 data/metrics.js 读取。</p>
+        <dl class="readout-grid" id="m8-metrics"></dl>
+      </div>
+    </div>
+
+    <div class="mod-row">
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m8.sourcesTitle">数据来源入口</h3>
+        <p class="note-body" data-i18n="m8.sourcesNote">律制数学表由定义直接计算。</p>
+        <dl class="readout-grid" id="m8-sources"></dl>
+        <h3 class="panel-title panel-title-sub" data-i18n="m8.honestyTitle">诚实边界</h3>
+        <p class="note-body" data-i18n="m8.honestyBody">传播关系学界有不同观点。</p>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m8.runTitle">复跑命令</h3>
+        <p class="note-body" data-i18n="m8.runNote">以下命令在本机 PowerShell 中可直接运行。</p>
+        <ul class="cmd-list" id="m8-cmds"></ul>
+      </div>
+    </div>
+
+    <div class="mod-row">
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m8.aiTitle">AI 使用披露</h3>
+        <ul class="plain-list">
+          <li data-i18n="m8.aiBody1">本作品的界面代码由团队在 AI 助手辅助下完成。</li>
+          <li data-i18n="m8.aiBody2">本页律制数值不依赖 AI 生成。</li>
+          <li data-i18n="m8.aiBody3">本页不含 AI 生成图像。</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title" data-i18n="m8.originalTitle">原创贡献</h3>
+        <ul class="plain-list">
+          <li data-i18n="m8.orig1">自建律制数据集。</li>
+          <li data-i18n="m8.orig2">双内核交叉校验。</li>
+          <li data-i18n="m8.orig3">可听化实验台。</li>
+          <li data-i18n="m8.orig4">零外部依赖单页。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel panel-wide">
+      <h3 class="panel-title" data-i18n="m8.glossaryTitle">术语对照（中英）</h3>
+      <p class="panel-desc" data-i18n="m8.glossaryDesc">页面内术语库，可搜索。</p>
+      <div class="glossary-tools">
+        <label class="inline-label" for="m8-search" data-i18n="m8.glossarySearch">搜索术语</label>
+        <input type="search" id="m8-search" class="search-input" autocomplete="off">
+        <span class="glossary-count" id="m8-glossary-count" aria-live="polite"></span>
+      </div>
+      <div class="glossary-list" id="m8-glossary" role="region" tabindex="0" data-i18n-aria="m8.glossaryTitle"></div>
+    </div>
+
+    <div class="figures" role="group" data-i18n-aria="a11y.figures">
+      <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
+      <ul class="figures-list" id="m8-figures"></ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot" role="contentinfo">
+  <p data-i18n="foot.line1">《同律》CONCORD · 律学交互实验室</p>
+  <p data-i18n="foot.line2">全国大学生数字媒体科技作品及创意竞赛 · 国际专项赛 · 2026</p>
+  <p data-i18n="foot.line3">零外部依赖 · 离线双击即开</p>
+  <p class="foot-meta">
+    <span id="footVersion">版本 1.0.0</span>
+    <span class="foot-dot" aria-hidden="true">·</span>
+    <button type="button" class="link-btn" id="backTop" data-i18n="foot.backTop">回到顶部</button>
+  </p>
+</footer>
+
+<!-- 状态提示（屏幕阅读器 / 视觉小条） -->
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" data-i18n-aria="a11y.toast"></div>
+
+<noscript>
+  <p class="noscript-warn">本作品需要启用 JavaScript 才能运行 —— 全部图形与计算都在页面内实时生成。 / This work needs JavaScript: every graphic and calculation is generated live in the page.</p>
+</noscript>
+
+<!-- 数据（由 _pipeline/build_data_js.py 生成） -->
+<script src="data/data_tuning.js"></script>
+<script src="data/data_history.js"></script>
+<script src="data/data_world.js"></script>
+<script src="data/data_glossary.js"></script>
+<script src="data/metrics.js"></script>
+<script src="data/deps.js"></script>
+<!-- 双语字典 -->
+<script src="i18n.js"></script>
+<!-- 应用层 -->
+<script src="app.js"></script>
+</body>
+</html>
