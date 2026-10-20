@@ -9360,13 +9360,13 @@ window.__deps = {
         termHuangzhong: '黄钟', termLinzhong: '林钟', termTaicu: '太簇', termNanlü: '南吕',
         termGuxi: '姑洗', termYingzhong: '应钟', termRuibin: '蕤宾', termDalü: '大吕',
         termYize: '夷则', termJiazhong: '夹钟', termWuyi: '无射', termZhonglü: '仲吕',
-        step1: '目标：把八度十二等分，设相邻两音的公比为 r，则 r^12 = 2',
-        step2: '第一次开平方：2^(1/2) = √2 —— 得到一个八度的「半」',
-        step3: '第二次开平方：2^(1/4) = √(√2) —— 得到四分之一八度',
-        step4: '另一支：2^(1/3) = 2^(1/3) —— 八度的三分之一（开立方）',
-        step5: '再开平方：2^(1/6) = √(2^(1/3)) —— 得到六分之一八度',
-        step6: '相除：2^(1/4) ÷ 2^(1/6) = 2^(1/12) —— 十二分之一八度，即密率',
-        step7: '闭合检验：把密率自乘 12 次，回到 2'
+        step1: '目标：把八度十二等分。设相邻两音的公比为 r，则 r^12 = 2',
+        step2: '第一次开平方，得到半个八度',
+        step3: '第二次开平方，得到四分之一个八度',
+        step4: '另一支：对 2 开立方，得到三分之一个八度',
+        step5: '再开平方，得到六分之一个八度',
+        step6: '两者相除，得到十二分之一个八度，即密率',
+        step7: '闭合检验：把密率自乘 12 次，应回到 2'
       },
 
       /* ---------------------------------------------------- M5 */
@@ -9781,13 +9781,13 @@ window.__deps = {
         termHuangzhong: 'Huangzhong', termLinzhong: 'Linzhong', termTaicu: 'Taicu', termNanlü: 'Nanlü',
         termGuxi: 'Guxi', termYingzhong: 'Yingzhong', termRuibin: 'Ruibin', termDalü: 'Dalü',
         termYize: 'Yize', termJiazhong: 'Jiazhong', termWuyi: 'Wuyi', termZhonglü: 'Zhonglü',
-        step1: 'Goal: divide the octave into twelve equal parts; let r be the ratio between neighbours, so r^12 = 2',
-        step2: 'First square root: 2^(1/2) = √2 — one half-octave',
-        step3: 'Second square root: 2^(1/4) = √(√2) — a quarter octave',
-        step4: 'A second branch: 2^(1/3) = 2^(1/3) — a third of an octave (cube root)',
-        step5: 'Square root again: 2^(1/6) = √(2^(1/3)) — a sixth of an octave',
-        step6: 'Divide: 2^(1/4) ÷ 2^(1/6) = 2^(1/12) — a twelfth of an octave, the cipher ratio',
-        step7: 'Closure test: raise the cipher ratio to the twelfth power and return to 2'
+        step1: 'Goal: divide the octave into twelve equal parts. With r the ratio between neighbours, r^12 = 2',
+        step2: 'First square root: one half-octave',
+        step3: 'Second square root: a quarter octave',
+        step4: 'A second branch: cube root of 2, a third of an octave',
+        step5: 'Square root again: a sixth of an octave',
+        step6: 'Divide them: a twelfth of an octave, the cipher ratio',
+        step7: 'Closure test: raise the cipher ratio to the twelfth power; it should return to 2'
       },
 
       m5: {
@@ -10517,7 +10517,7 @@ window.__deps = {
     m1: { steps: 0 },
     m2: { ratio: 0.75, preset: null },
     m3: { active: 12 },
-    m4: { step: 0 },
+    m4: { step: 7 },
     m5: { sel: ['sanfen', 'tet12', 'ji5'], a: 'sanfen', b: 'tet12', region: 'all', mapId: 'china' },
     m6: { tone: 'front', hui: 6 },
     m7: { fret: 7 }
@@ -11064,9 +11064,11 @@ window.__deps = {
       host.textContent = '';
       M4_DERIV.slice(0, n).forEach((d, i) => {
         const li = el('li');
-        const k = el('span', 'dk', null, T('m4.step' + (i + 1)) + '：');
-        li.appendChild(k);
-        li.appendChild(el('span', 'dv', null, d.expr + (d.val != null ? ' = ' + fmt(d.val, 13) : '')));
+        li.appendChild(el('span', 'dk', null, T('m4.step' + (i + 1))));
+        if (d.val != null) {
+          li.appendChild(el('span', 'dv', null, ' = ' + (i === M4_DERIV.length - 1
+            ? d.val.toPrecision(17) : fmt(d.val, 15))));
+        }
         host.appendChild(li);
       });
     }
