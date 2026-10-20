@@ -5596,6 +5596,13 @@
  */
 window.TuningData = {
  "schema": "concord.tuning/v1",
+ "summary": {
+  "tunings": 9,
+  "tables": 11,
+  "derived": 2,
+  "note_zh": "对外口径：9 种律制，另有 2 套派生对照表（页面上共 11 张表）。",
+  "note_en": "Outward figure: 9 tuning systems, plus 2 derived comparison tables (11 tables shown on the page)."
+ },
  "reference_zh": "基准约定：A4 = 440 Hz；黄钟（C4，12-TET）= 261.6255653005986 Hz。音分定义 cents(f1,f2) = 1200·log2(f2/f1)。",
  "reference_en": "Conventions: A4 = 440 Hz; Huangzhong (C4, 12-TET) = 261.6255653005986 Hz. cents(f1,f2) = 1200·log2(f2/f1).",
  "note_count_total": 11,
@@ -5727,7 +5734,8 @@ window.TuningData = {
    "basis_zh": "纯五度 3:2 连续叠加 12 次。与三分损益的**音分数值完全相同**——两条文明路径解出同一组比例，只是命名与乐器不同。",
    "basis_en": "Twelve stacked 3:2 fifths. Its cent table is **identical** to sanfen sunyi — two cultures, one set of ratios, different names and instruments.",
    "source": "数学定义（3:2 五度链）",
-   "status": "computed"
+   "status": "computed",
+   "derived": true
   },
   {
    "id": "ji5",
@@ -8973,12 +8981,12 @@ window.__metrics = {
  "app": {
   "modules": 8,
   "modules_ready": 8,
-  "dom_chars_zh": 6227,
-  "dom_chars_en": 20397,
-  "load_ms": 426,
+  "dom_chars_zh": 6327,
+  "dom_chars_en": 20297,
+  "load_ms": 396,
   "console_errors": 0,
   "a11y_axe_violations": 0,
-  "i18n_en_cjk_ratio": 0.00913,
+  "i18n_en_cjk_ratio": 0.00632,
   "app_version": "1.0.0"
  },
  "live": {
@@ -9050,7 +9058,7 @@ window.__metrics = {
   "evidence": "metrics.json",
   "audio": "verify_audio.js"
  },
- "_fingerprint": "sha256:c907703965216cd2"
+ "_fingerprint": "sha256:466331bf2659efff"
 };
 ;
 /* ===== 15. data/deps.js ===== */
@@ -9499,7 +9507,10 @@ window.__deps = {
         srcHistory: '历史时间线',
         srcWorld: '世界律制说明',
         srcGlossary: '术语库',
+        tuningScope: '对外口径 {n} 种律制（另含 {d} 套派生对照表，页面共 {t} 张表）',
         srcStatus: '来源状态字段',
+        sourceRegister: '来源清单',
+        sourcesInline: '来源 {ids}（见{reg}）',
         runTitle: '复跑命令',
         runNote: '以下命令在本机 PowerShell 中可直接运行（工作目录 F:\\sjq\\数媒）。',
         runKernel: '内核断言（Python 权威实现）',
@@ -9916,7 +9927,10 @@ window.__deps = {
         srcHistory: 'Historical timeline',
         srcWorld: 'World tunings notes',
         srcGlossary: 'Glossary',
+        tuningScope: 'Outward figure: {n} tuning systems (+{d} derived comparison tables, {t} tables shown)',
         srcStatus: 'Source-status field',
+        sourceRegister: 'Source Register',
+        sourcesInline: 'Sources: {ids} (see {reg})',
         runTitle: 'Rerun commands',
         runNote: 'These run as-is in PowerShell on this machine (working directory F:\\sjq\\数媒).',
         runKernel: 'Kernel assertions (authoritative Python)',
@@ -11096,6 +11110,33 @@ window.__deps = {
     ]);
   }
 
+  /** 年份标签：中文用 year_label_zh；英文只接受无 CJK 的标签，否则由 year 数值生成 */
+  function yearLabel(ev) {
+    const y = ev ? ev.year : null;
+    const zh = state.lang === 'zh';
+    const raw = ev ? (zh ? ev.year_label_zh : ev.year_label_en) : '';
+    if (typeof raw === 'string' && raw &&
+        (zh || !/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/.test(raw))) {
+      return raw;
+    }
+    if (!isNum(y)) return '';
+    if (y < 0) return 'c. ' + Math.abs(y) + ' BCE';
+    if (y < 1000) return String(y) + ' CE';
+    return String(y);
+  }
+
+  /** 来源标注：只由 source_ids 生成，任何语言都不含仓库路径/中文括注 */
+  function sourceLabel(ev) {
+    const ids = (ev && Array.isArray(ev.source_ids)) ? ev.source_ids.filter(Boolean) : [];
+    const reg = T('m8.sourceRegister');
+    if (ids.length) return T('m8.sourcesInline', { ids: ids.join(', '), reg: reg });
+    if (state.lang === 'zh' && ev && ev.source) {
+      return T('ui.source') + ': ' +
+        String(ev.source).replace(/（[^）]*sources\.md[^）]*）/g, '').replace(/\s+$/, '');
+    }
+    return T('m8.sourcesInline', { ids: '-', reg: reg });
+  }
+
   function renderM4Timeline() {
     const host = $('#m4-timeline');
     if (!host) return;
@@ -11103,12 +11144,13 @@ window.__deps = {
     host.textContent = '';
     data.forEach((ev) => {
       const item = el('div', 'tl-item' + (ev.year === 1584 || ev.year === -433 ? ' is-key' : ''));
-      item.appendChild(el('div', 'tl-year', null, state.lang === 'zh' ? ev.year_label_zh : ev.year_label_en));
+      item.appendChild(el('div', 'tl-year', null, yearLabel(ev)));
       item.appendChild(el('div', 'tl-title', null, state.lang === 'zh' ? ev.title_zh : ev.title_en));
       const body = el('p', 'tl-body', null, state.lang === 'zh' ? ev.body_zh : ev.body_en);
       item.appendChild(body);
       if (ev.status) item.appendChild(el('span', 'tl-status', null, statusText(ev.status)));
-      if (ev.source) item.appendChild(el('div', 'tl-src', null, T('ui.source') + '：' + ev.source));
+      const srcTxt = sourceLabel(ev);
+      if (srcTxt) item.appendChild(el('div', 'tl-src', null, srcTxt));
       host.appendChild(item);
     });
   }
@@ -11794,11 +11836,7 @@ window.__deps = {
   function renderM8Metrics() {
     const m = W.__metrics || {};
     const a = m.app || {};
-    const PAGE_SECTIONS = ['app', 'kernel', 'audio', 'evidence'];
-    const pending = (m._pending || []).filter((p) => {
-      const sec = String(p).split('.')[0];
-      return PAGE_SECTIONS.indexOf(sec) >= 0;
-    }).length;
+    const pending = (m._pending || []).length;
     renderReadouts($('#m8-metrics'), [
       { k: T('m8.mModules'), v: a.modules != null ? String(a.modules) : '8' },
       { k: T('m8.mModulesReady'), v: a.modules_ready != null ? String(a.modules_ready) : String(readyCount()) },
@@ -11829,8 +11867,11 @@ window.__deps = {
     const hist = W.HistoryData ? (W.HistoryData.events || []) : [];
     const world = W.WorldData ? (W.WorldData.regions || []) : [];
     const gl = W.GlossaryData ? (W.GlossaryData.terms || []) : [];
+    const tsum = (W.TuningData && W.TuningData.summary) || {};
+    const tuningCount = (tsum.tunings != null) ? tsum.tunings : tuning.length;
+    const derivedCount = (tsum.derived != null) ? tsum.derived : 0;
     renderReadouts($('#m8-sources'), [
-      { k: T('m8.srcTuning'), v: String(tuning.length) },
+      { k: T('m8.srcTuning'), v: String(tuningCount) + (derivedCount ? ' (+' + derivedCount + ')' : '') },
       { k: T('m8.srcHistory'), v: String(hist.length) },
       { k: T('m8.srcWorld'), v: String(world.length) },
       { k: T('m8.srcGlossary'), v: String(gl.length) },
@@ -11855,11 +11896,13 @@ window.__deps = {
         cmdHost.appendChild(li);
       });
     }
+    // 单源：页面数字一律取自 data/metrics.js（由 metrics_app.json 生成），渲染时不另测
+    const appM = (m && m.app) || {};
     figuresInto('#m8-figures', [
-      figComputed(T('m8.mModules'), '8', '', null),
-      figComputed(T('m8.mDomCharsZh'), String(measureChars('zh')), '', null),
-      figComputed(T('m8.mDomCharsEn'), String(measureChars('en')), '', null),
-      figComputed(T('m8.mLoad'), String(appLoadMs()), 'ms', null)
+      figComputed(T('m8.mModules'), appM.modules != null ? String(appM.modules) : '-', '', null),
+      figComputed(T('m8.mDomCharsZh'), appM.dom_chars_zh != null ? String(appM.dom_chars_zh) : '-', '', null),
+      figComputed(T('m8.mDomCharsEn'), appM.dom_chars_en != null ? String(appM.dom_chars_en) : '-', '', null),
+      figComputed(T('m8.mLoad'), appM.load_ms != null ? String(appM.load_ms) : '-', 'ms', null)
     ]);
   }
 
@@ -12054,7 +12097,9 @@ window.__deps = {
   function updateCover() {
     const total = $('#coverTotal');
     if (!total) return;
-    const systems = W.TuningData && W.TuningData.systems ? W.TuningData.systems.length : 0;
+    const tsum2 = (W.TuningData && W.TuningData.summary) || {};
+    const systems = (tsum2.tunings != null) ? tsum2.tunings
+      : (W.TuningData && W.TuningData.systems ? W.TuningData.systems.length : 0);
     const terms = W.GlossaryData && W.GlossaryData.terms ? W.GlossaryData.terms.length : 0;
     total.textContent = T('meta.coverStats', { m: 8, s: systems, n: terms });
   }
@@ -12532,6 +12577,12 @@ window.__deps = {
         if (/^(py|node|npm|npx|sh|cd|ls|rm|git)$/.test(m[1])) continue;
         out.push(m[0]);
         if (out.length >= 40) break;
+      }
+      // EN 模式不得出现仓库路径 / 中文括注 / 中文冒号来源标注
+      if (state.lang === 'en') {
+        ['_research/', '详见', '来源清单', 'Source：'].forEach((pat) => {
+          if (body.indexOf(pat) >= 0) out.push(pat);
+        });
       }
     } catch (e) { /* noop */ }
     return out;
