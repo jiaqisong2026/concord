@@ -818,11 +818,14 @@ input[type="range"]::-moz-range-thumb {
 .data-table tbody tr:hover td { background: rgba(200, 163, 90, .06); }
 .data-table tbody tr.is-active td { background: rgba(200, 163, 90, .12); color: var(--light); }
 .data-table tbody tr.is-pending td:first-child::after {
-  content: "◌";
-  color: var(--gold-text);
-  font-size: 9px;
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
   margin-left: 5px;
   vertical-align: super;
+  border: 1px solid var(--gold-text);
+  border-radius: 50%;
 }
 .data-table .num-cents { color: var(--gold-text); }
 .data-table .num-dev { color: var(--muted); }
@@ -863,6 +866,9 @@ input[type="range"]::-moz-range-thumb {
 .deriv-list .dk { color: var(--light); font-weight: 600; }
 
 .check-box { margin-top: var(--sp-3); }
+
+/* 长数值（如 1.0594630943592953 / 2.0000000000000009）不换行，缩字号适配单元格 */
+#m4-lit dd, #m4-power dd { white-space: nowrap; font-size: 13px; letter-spacing: 0; }
 
 /* ---------------------------------------------------------------- M4 时间线 */
 .timeline {
@@ -1142,6 +1148,9 @@ input[type="range"]::-moz-range-thumb {
 }
 .mod.is-seen .mod-head { animation: fadeUp var(--t-slow) ease-out both; }
 
+/* EN 模式下模块标题已是英文，避免英文副题重复 */
+html[data-lang="en"] .mod-title-en { display: none; }
+
 /* ---------------------------------------------------------------- 响应式 */
 @media (max-width: 1024px) {
   .mod-body { grid-template-columns: minmax(0, 1fr); }
@@ -1233,7 +1242,6 @@ html[data-reduced="1"] *, html[data-reduced="1"] *::before, html[data-reduced="1
 
   <div class="topbar-tools">
     <button type="button" class="tool-btn" id="soundToggle" aria-pressed="false" data-i18n-aria="a11y.playGroup">
-      <span class="tool-ico" aria-hidden="true">◍</span>
       <span class="tool-label" data-i18n="ui.stopAllShort">静音</span>
     </button>
     <div class="lang-switch" role="group" aria-label="Language" data-i18n-aria="a11y.langGroup">
@@ -1263,7 +1271,7 @@ html[data-reduced="1"] *, html[data-reduced="1"] *::before, html[data-reduced="1
       <p class="cover-intro" data-i18n="meta.intro">一个八度必须切成 12 个半音。用简单分数一路叠下去，数学上永远回不到起点——差 23.46 音分。</p>
       <div class="cover-gap" role="img" aria-label="23.46 cents gap">
         <span class="cover-gap-num">23.46</span>
-        <span class="cover-gap-unit" data-i18n="ui.centsShort">¢</span>
+        <span class="cover-gap-unit" data-i18n="ui.centsShort">音分</span>
       </div>
       <p class="cover-hint" data-i18n="meta.introHint">建议顺序：先听见那不闭合的 23.46 音分，再看两个文明怎样各自解开它。</p>
       <div class="cover-cta">

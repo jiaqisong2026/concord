@@ -2977,12 +2977,14 @@
     toneBtns.push(makeTone('side', dd.side));
     toneBox.appendChild(toneBtns[0]); toneBox.appendChild(toneBtns[1]);
     var nums = mk('div', 'vz-bell-nums');
+    var numKeyEls = [];   /* 读数区三个标签（正鼓/侧鼓/相差），切语言时同步 */
     function numBox(cls, k) {
       var wrap = mk('div', 'vz-bell-num ' + cls);
       var kk = mk('span', 'k', { text: k });
       var vv = mk('span', 'v');
       wrap.appendChild(kk); wrap.appendChild(vv);
       nums.appendChild(wrap);
+      numKeyEls.push(kk);
       return vv;
     }
     numFront = numBox('is-front', dd.front);
@@ -3209,6 +3211,11 @@
         toneBtns[0].textContent = dd2.front;
         toneBtns[1].textContent = dd2.side;
         toneBtns[0].parentNode.setAttribute('aria-label', dd2.toneGroup);
+        if (numKeyEls[0]) numKeyEls[0].textContent = dd2.front;
+        if (numKeyEls[1]) numKeyEls[1].textContent = dd2.side;
+        if (numKeyEls[2]) numKeyEls[2].textContent = dd2.diff;
+        var b = currentBell();
+        if (b) renderNums(b);
         render();
       },
       getState: function () { return { bells: state.bells.slice(), selected: state.selected, tone: state.tone }; }
@@ -5558,7 +5565,14 @@
       highlight: highlight,
       resize: layout,
       destroy: destroy,
-      setLang: function (l) { lang = (l === 'en') ? 'en' : 'zh'; renderCaption(); draw(); },
+      setLang: function (l) {
+        lang = (l === 'en') ? 'en' : 'zh';
+        var dd2 = D();
+        root.setAttribute('aria-label', dd2.group);
+        hintEl.textContent = dd2.hint;
+        renderCaption();
+        draw();
+      },
       getState: function () { return { partials: state.partials.slice(), f0: state.f0, playing: state.playing }; }
     };
     container.__vizSpectrum = inst;
@@ -8959,12 +8973,12 @@ window.__metrics = {
  "app": {
   "modules": 8,
   "modules_ready": 8,
-  "dom_chars_zh": 6213,
-  "dom_chars_en": 20343,
-  "load_ms": 380,
+  "dom_chars_zh": 6227,
+  "dom_chars_en": 20397,
+  "load_ms": 426,
   "console_errors": 0,
   "a11y_axe_violations": 0,
-  "i18n_en_cjk_ratio": 0.00935,
+  "i18n_en_cjk_ratio": 0.00913,
   "app_version": "1.0.0"
  },
  "live": {
@@ -9036,7 +9050,7 @@ window.__metrics = {
   "evidence": "metrics.json",
   "audio": "verify_audio.js"
  },
- "_fingerprint": "sha256:ee5a8b18b38cf67b"
+ "_fingerprint": "sha256:c907703965216cd2"
 };
 ;
 /* ===== 15. data/deps.js ===== */
@@ -9142,7 +9156,7 @@ window.__deps = {
         playAll: '播放全部',
         compare: '对比播放',
         cents: '音分',
-        centsShort: '¢',
+        centsShort: '音分',
         hz: 'Hz',
         step: '步',
         of: '/',
@@ -9223,11 +9237,11 @@ window.__deps = {
         readBeat: '拍频',
         beatNote: '两音同时发声时每秒相撞的次数',
         explainTitle: '这不是计算误差',
-        explain: '3 是质数，2 也是质数：3¹²/2¹⁹ 永远不可能等于 1。所以无论走多少步，五度链都走不到八度的整数倍。差值 531441/524288 = 1.013643…，即 23.46 音分，史称「毕达哥拉斯音差」。它不是近似算错，而是一个精确的数学事实——中外律学反复求解的都是它。',
-        explainEq: '3¹²/2¹⁹',
+        explain: '3 是质数，2 也是质数：3^12/2^19 永远不可能等于 1。所以无论走多少步，五度链都走不到八度的整数倍。差值 531441/524288 = 1.013643…，即 23.46 音分，史称「毕达哥拉斯音差」。它不是近似算错，而是一个精确的数学事实——中外律学反复求解的都是它。',
+        explainEq: '3^12/2^19',
         check1: '12 步纯五度累计音分',
         check2: '闭合误差（音分）',
-        check3: '长度比 3¹²/2¹⁹',
+        check3: '长度比 3^12/2^19',
         check4: '拍音（A4 与 +23.46 音分）',
         hintPlay: '声音需要你先点一下按钮才会响（浏览器安全策略）。'
       },
@@ -9252,8 +9266,8 @@ window.__deps = {
         stoppedLabel: '被截取的弦',
         invalid: '弦长比必须在 0.5 与 1 之间',
         explainTitle: '为什么是反比',
-        explain: '频率 f = v/(2L)，速度 v 不变，所以 f ∝ 1/L。弦长减半（L→L/2）则 f→2f，就是八度；L→2L/3 则 f→3f/2，就是五度。音分则是把乘法变成加法：¢ = 1200·log₂(f₂/f₁)。',
-        explainEq: '¢ = 1200·log₂(f₂/f₁)',
+        explain: '频率 f = v/(2L)，速度 v 不变，所以 f ∝ 1/L。弦长减半（L→L/2）则 f→2f，就是八度；L→2L/3 则 f→3f/2，就是五度。音分则是把乘法变成加法：cents = 1200 x log2(f2/f1)。',
+        explainEq: 'cents = 1200 x log2(f2/f1)',
         preset_octave: '八度 2:1',
         preset_fifth: '纯五度 3:2',
         preset_fourth: '纯四度 4:3',
@@ -9325,7 +9339,7 @@ window.__deps = {
         litComputed: '本页计算值',
         litDiff: '差',
         powerTitle: '闭合检验：12 次幂是否等于 2',
-        powerResult: '密率¹²',
+        powerResult: '密率^12',
         powerTarget: '目标',
         powerDiff: '误差',
         timelineTitle: '并行解题时间线',
@@ -9337,20 +9351,20 @@ window.__deps = {
         abPlay: '播放这一段',
         abStop: '停止',
         whyTitle: '为什么开方就是解',
-        whyBody: '若八度 = 2 倍频率，等分成 12 份，则相邻两音的公比 r 满足 r¹² = 2，故 r = 2^(1/12) = 1.0594630943592953。所谓「密率」就是这一位小数背后的严谨常量。',
+        whyBody: '若八度 = 2 倍频率，等分成 12 份，则相邻两音的公比 r 满足 r^12 = 2，故 r = 2^(1/12) = 1.0594630943592953。所谓「密率」就是这一位小数背后的严谨常量。',
         honorNote: '本节并列展示两条独立解题路径与可核验的数学结论，不对传播先后作出断言。',
         check1: '密率 = 2^(1/12) 误差',
-        check2: '密率¹² 与 2 的误差',
+        check2: '密率^12 与 2 的误差',
         check3: '文献值与计算值之差',
         check4: '十二个半音全部 = 100 音分',
         termHuangzhong: '黄钟', termLinzhong: '林钟', termTaicu: '太簇', termNanlü: '南吕',
         termGuxi: '姑洗', termYingzhong: '应钟', termRuibin: '蕤宾', termDalü: '大吕',
         termYize: '夷则', termJiazhong: '夹钟', termWuyi: '无射', termZhonglü: '仲吕',
-        step1: '目标：把八度十二等分，设相邻两音的公比为 r，则 r¹² = 2',
+        step1: '目标：把八度十二等分，设相邻两音的公比为 r，则 r^12 = 2',
         step2: '第一次开平方：2^(1/2) = √2 —— 得到一个八度的「半」',
         step3: '第二次开平方：2^(1/4) = √(√2) —— 得到四分之一八度',
-        step4: '另一支：2^(1/3) = ∛2 —— 八度的三分之一（开立方）',
-        step5: '再开平方：2^(1/6) = √(∛2) —— 得到六分之一八度',
+        step4: '另一支：2^(1/3) = 2^(1/3) —— 八度的三分之一（开立方）',
+        step5: '再开平方：2^(1/6) = √(2^(1/3)) —— 得到六分之一八度',
         step6: '相除：2^(1/4) ÷ 2^(1/6) = 2^(1/12) —— 十二分之一八度，即密率',
         step7: '闭合检验：把密率自乘 12 次，回到 2'
       },
@@ -9416,7 +9430,7 @@ window.__deps = {
         guqinStop: '停止',
         specTitle: '频谱',
         specDesc: '把「一钟双音」的声音拆成频率成分：一钟两音不是一个音的泛音，而是两组分音并存。',
-        check1: '泛音频率 = 基频 × n',
+        check1: '泛音频率 = 基频 x n',
         check2: '正鼓音 / 侧鼓音间距',
         check3: '徽位最小比值',
         check4: '一钟双音（编钟）',
@@ -9432,7 +9446,7 @@ window.__deps = {
         titleEn: 'Tuning and Instruments · The Art of Compromise',
         lead: '乐器不会按理论长。吉他品丝按 2^(-n/12) 排布，钢琴的高音区要拉宽、低音区要压窄——因为真实乐器要考虑自己的物理。所谓「标准音高」，是一场持续的妥协。',
         fretTitle: '吉他品丝：平均律的物证',
-        fretDesc: '第 n 品到琴枕的距离 dₙ = L·(1 − 2^(−n/12))。把平均律与纯律并排看：不是所有音都能同时纯净。',
+        fretDesc: '第 n 品到琴枕的距离 d(n) = L·(1 - 2^(-n/12))。把平均律与纯律并排看：不是所有音都能同时纯净。',
         fretLabel: '第 {n} 品',
         fretET: '平均律位置',
         fretJust: '纯律（同音级 5:4 大三度）位置',
@@ -9445,7 +9459,7 @@ window.__deps = {
         stretchNote: '示意曲线：形状取自通行的 Railsback 曲线描述，具体数值随琴而异。',
         isochordTitle: '同一把尺子上的偏离',
         isochordDesc: '把各律制的十二个音对十二平均律的偏差画成图：平均律是一条直线（零偏差），其它律制上下起伏。',
-        check1: '品丝位置公式 dₙ = L(1−2^(−n/12))',
+        check1: '品丝位置公式 d(n) = L(1-2^(-n/12))',
         check2: '第 12 品应正好在弦长一半',
         check3: '纯律大三度 386.31 音分',
         check4: '平均律大三度 400 音分'
@@ -9459,9 +9473,9 @@ window.__deps = {
         lead: '这一节把页面上的每个数字都交出来：算法、断言、来源、复跑命令、AI 使用情况。所有对外数字都来自同一份 metrics.json，页面不手写任何数字。',
         algoTitle: '算法说明（摘要）',
         algoBody1: '音分定义：cents(f₁,f₂) = 1200·log₂(f₂/f₁)。它是把频率的乘法关系转成加法关系的一步，全部律制比较都建立在它之上。',
-        algoBody2: '三分损益：从黄钟起连续 ×3/2 并折叠进 [1,2)，得到 12 律；第 12 律与黄钟的差为 1200·log₂(3¹²/2¹⁹) = 23.4600 音分。',
+        algoBody2: '三分损益：从黄钟起连续 ×3/2 并折叠进 [1,2)，得到 12 律；第 12 律与黄钟的差为 1200·log₂(3^12/2^19) = 23.4600 音分。',
         algoBody3: '新法密率：2^(1/12) = 1.0594630943592953；其 12 次幂与 2 的误差小于 1e-15。',
-        algoBody4: '品丝位置：dₙ = L·(1 − 2^(−n/12))；泛音列：fₙ = n·f₀；拍频：|f₁ − f₂|。',
+        algoBody4: '品丝位置：d(n) = L·(1 - 2^(-n/12))；泛音列：f(n) = n·f(0)；拍频：|f₁ - f₂|。',
         metricsTitle: '本页可核验数字',
         metricsNote: '以下数字由页面运行时从 data/metrics.js 读取；该文件由管线脚本从 _pipeline/metrics_app.json 与 metrics.json 生成，禁止手写。',
         mModules: '模块数',
@@ -9475,7 +9489,7 @@ window.__deps = {
         mVersion: '作品版本',
         mPending: '待生成指标',
         mKernelAssertions: '内核断言（通过 / 总数）',
-        mCrossChecks: 'Python ↔ JS 交叉校验组',
+        mCrossChecks: 'Python  /  JS 交叉校验组',
         mAudioAssertions: '音频断言（通过 / 总数）',
         mAudioCents: '单音 FFT 峰值误差（{g} 组）',
         mAudioBeat: '拍频包络误差（{g} 组）',
@@ -9490,7 +9504,7 @@ window.__deps = {
         runNote: '以下命令在本机 PowerShell 中可直接运行（工作目录 F:\\sjq\\数媒）。',
         runKernel: '内核断言（Python 权威实现）',
         runExport: '导出律制表',
-        runCross: 'Python ↔ JS 交叉校验',
+        runCross: 'Python  /  JS 交叉校验',
         runMerge: '汇总对外数字',
         runBuildData: '重建页面数据（本页 data/*.js）',
         runGate: '国一标准门禁总跑',
@@ -9567,7 +9581,7 @@ window.__deps = {
         playAll: 'Play all',
         compare: 'Compare',
         cents: 'cents',
-        centsShort: '¢',
+        centsShort: 'ct',
         hz: 'Hz',
         step: 'Step',
         of: '/',
@@ -9647,11 +9661,11 @@ window.__deps = {
         readBeat: 'Beat frequency',
         beatNote: 'How many times per second the two tones collide',
         explainTitle: 'This is not a rounding error',
-        explain: '3 is prime and 2 is prime, so 3¹²/2¹⁹ can never equal 1. However many steps you take, the fifth chain can never reach a whole number of octaves. The gap 531441/524288 = 1.013643…, i.e. 23.46 cents, is the Pythagorean comma. It is an exact mathematical fact, not a computing mistake — and it is what theorists in China and Europe kept trying to solve.',
-        explainEq: '3¹²/2¹⁹',
+        explain: '3 is prime and 2 is prime, so 3^12/2^19 can never equal 1. However many steps you take, the fifth chain can never reach a whole number of octaves. The gap 531441/524288 = 1.013643…, i.e. 23.46 cents, is the Pythagorean comma. It is an exact mathematical fact, not a computing mistake — and it is what theorists in China and Europe kept trying to solve.',
+        explainEq: '3^12/2^19',
         check1: 'Twelve fifths, total',
         check2: 'Closure error (cents)',
-        check3: 'Length ratio 3¹²/2¹⁹',
+        check3: 'Length ratio 3^12/2^19',
         check4: 'Beating (A4 vs +23.46 cents)',
         hintPlay: 'Sound only starts after you press a button — that is the browser security rule.'
       },
@@ -9675,8 +9689,8 @@ window.__deps = {
         stoppedLabel: 'Stopped string',
         invalid: 'String length must lie between 0.5 and 1',
         explainTitle: 'Why inversely proportional',
-        explain: 'For a string, f = v/(2L); with fixed wave speed v, f is proportional to 1/L. Halving the length (L→L/2) gives 2f, the octave; L→2L/3 gives 3f/2, the fifth. Cents turn multiplication into addition: ¢ = 1200·log₂(f₂/f₁).',
-        explainEq: '¢ = 1200·log₂(f₂/f₁)',
+        explain: 'For a string, f = v/(2L); with fixed wave speed v, f is proportional to 1/L. Halving the length (L→L/2) gives 2f, the octave; L→2L/3 gives 3f/2, the fifth. Cents turn multiplication into addition: cents = 1200 x log2(f2/f1).',
+        explainEq: 'cents = 1200 x log2(f2/f1)',
         preset_octave: 'Octave 2:1',
         preset_fifth: 'Perfect fifth 3:2',
         preset_fourth: 'Perfect fourth 4:3',
@@ -9746,7 +9760,7 @@ window.__deps = {
         litComputed: 'Computed here',
         litDiff: 'Difference',
         powerTitle: 'Closure test: is the twelfth power equal to 2?',
-        powerResult: 'Ratio¹²',
+        powerResult: 'Ratio^12',
         powerTarget: 'Target',
         powerDiff: 'Error',
         timelineTitle: 'Parallel solutions on a timeline',
@@ -9758,20 +9772,20 @@ window.__deps = {
         abPlay: 'Play this phrase',
         abStop: 'Stop',
         whyTitle: 'Why a root is the answer',
-        whyBody: 'If the octave is a factor of 2 and must be split into 12 equal parts, the ratio r between neighbours satisfies r¹² = 2, so r = 2^(1/12) = 1.0594630943592953. The "cipher ratio" is exactly this constant.',
+        whyBody: 'If the octave is a factor of 2 and must be split into 12 equal parts, the ratio r between neighbours satisfies r^12 = 2, so r = 2^(1/12) = 1.0594630943592953. The "cipher ratio" is exactly this constant.',
         honorNote: 'This page presents two independent solution paths and verifiable mathematics side by side; it makes no claim about who came first.',
-        check1: 'Cipher ratio − 2^(1/12)',
-        check2: 'Ratio¹² vs 2',
+        check1: 'Cipher ratio vs 2^(1/12)',
+        check2: 'Ratio^12 vs 2',
         check3: 'Recorded minus computed',
         check4: 'All twelve semitones = 100 cents',
         termHuangzhong: 'Huangzhong', termLinzhong: 'Linzhong', termTaicu: 'Taicu', termNanlü: 'Nanlü',
         termGuxi: 'Guxi', termYingzhong: 'Yingzhong', termRuibin: 'Ruibin', termDalü: 'Dalü',
         termYize: 'Yize', termJiazhong: 'Jiazhong', termWuyi: 'Wuyi', termZhonglü: 'Zhonglü',
-        step1: 'Goal: divide the octave into twelve equal parts; let r be the ratio between neighbours, so r¹² = 2',
+        step1: 'Goal: divide the octave into twelve equal parts; let r be the ratio between neighbours, so r^12 = 2',
         step2: 'First square root: 2^(1/2) = √2 — one half-octave',
         step3: 'Second square root: 2^(1/4) = √(√2) — a quarter octave',
-        step4: 'A second branch: 2^(1/3) = ∛2 — a third of an octave (cube root)',
-        step5: 'Square root again: 2^(1/6) = √(∛2) — a sixth of an octave',
+        step4: 'A second branch: 2^(1/3) = 2^(1/3) — a third of an octave (cube root)',
+        step5: 'Square root again: 2^(1/6) = √(2^(1/3)) — a sixth of an octave',
         step6: 'Divide: 2^(1/4) ÷ 2^(1/6) = 2^(1/12) — a twelfth of an octave, the cipher ratio',
         step7: 'Closure test: raise the cipher ratio to the twelfth power and return to 2'
       },
@@ -9835,7 +9849,7 @@ window.__deps = {
         guqinStop: 'Stop',
         specTitle: 'Spectrum',
         specDesc: 'Break the two-tone bell into frequency components: the second tone is not a harmonic of the first; two sets of partials coexist.',
-        check1: 'Harmonic frequency = fundamental × n',
+        check1: 'Harmonic frequency = fundamental x n',
         check2: 'Front / side tone distance',
         check3: 'Smallest stud ratio',
         check4: 'Two tones in one bell',
@@ -9850,7 +9864,7 @@ window.__deps = {
         titleEn: 'Tuning and Instruments · The Art of Compromise',
         lead: 'Instruments do not follow theory. Guitar frets are placed by 2^(-n/12); pianos stretch the treble up and the bass down, because a real instrument has to answer to its own physics. "Standard pitch" is a compromise that never stops being renegotiated.',
         fretTitle: 'Guitar frets: equal temperament made physical',
-        fretDesc: 'The distance from nut to fret n is dₙ = L·(1 − 2^(−n/12)). Put equal temperament next to just intonation: not every interval can be pure at the same time.',
+        fretDesc: 'The distance from nut to fret n is d(n) = L·(1 - 2^(-n/12)). Put equal temperament next to just intonation: not every interval can be pure at the same time.',
         fretLabel: 'Fret {n}',
         fretET: 'Equal-temperament position',
         fretJust: 'Just position (5:4 major third)',
@@ -9863,7 +9877,7 @@ window.__deps = {
         stretchNote: 'Schematic curve: the shape follows the published Railsback description; exact values vary per instrument.',
         isochordTitle: 'Deviation on one ruler',
         isochordDesc: 'Plot each tuning system\'s twelve pitches against 12-TET: equal temperament is a flat line at zero, everything else rises and falls.',
-        check1: 'Fret formula dₙ = L(1−2^(−n/12))',
+        check1: 'Fret formula d(n) = L(1-2^(-n/12))',
         check2: 'Fret 12 lands exactly at half the string',
         check3: 'Just major third = 386.31 cents',
         check4: '12-TET major third = 400 cents'
@@ -9876,9 +9890,9 @@ window.__deps = {
         lead: 'This section hands over every number on the page: algorithms, assertions, sources, rerun commands and AI usage. All outward figures come from one metrics.json; the page hard-codes none of them.',
         algoTitle: 'Algorithms (summary)',
         algoBody1: 'Cents: cents(f1,f2) = 1200·log2(f2/f1). This single step turns the multiplication of frequencies into the addition of intervals, and every comparison in this work rests on it.',
-        algoBody2: 'Sanfen sunyi: multiply by 3/2 repeatedly from Huangzhong and fold into [1,2) to obtain twelve pitches; pitch twelve differs from Huangzhong by 1200·log₂(3¹²/2¹⁹) = 23.4600 cents.',
+        algoBody2: 'Sanfen sunyi: multiply by 3/2 repeatedly from Huangzhong and fold into [1,2) to obtain twelve pitches; pitch twelve differs from Huangzhong by 1200·log₂(3^12/2^19) = 23.4600 cents.',
         algoBody3: 'Cipher ratio: 2^(1/12) = 1.0594630943592953; the error of its twelfth power against 2 is below 1e-15.',
-        algoBody4: 'Fret position: dₙ = L·(1 − 2^(−n/12)); harmonic series: fₙ = n·f₀; beating: |f₁ − f₂|.',
+        algoBody4: 'Fret position: d(n) = L·(1 - 2^(-n/12)); harmonic series: f(n) = n·f(0); beating: |f₁ - f₂|.',
         metricsTitle: 'Verifiable figures on this page',
         metricsNote: 'The figures below are read at runtime from data/metrics.js, which the pipeline generates from _pipeline/metrics_app.json and metrics.json. Nothing here is typed by hand.',
         mModules: 'Modules',
@@ -9892,7 +9906,7 @@ window.__deps = {
         mVersion: 'App version',
         mPending: 'Pending metrics',
         mKernelAssertions: 'Kernel assertions (passed / total)',
-        mCrossChecks: 'Python ↔ JS cross-checks',
+        mCrossChecks: 'Python  /  JS cross-checks',
         mAudioAssertions: 'Audio assertions (passed / total)',
         mAudioCents: 'Single-tone FFT peak error ({g} groups)',
         mAudioBeat: 'Beat envelope error ({g} groups)',
@@ -9907,7 +9921,7 @@ window.__deps = {
         runNote: 'These run as-is in PowerShell on this machine (working directory F:\\sjq\\数媒).',
         runKernel: 'Kernel assertions (authoritative Python)',
         runExport: 'Export tuning tables',
-        runCross: 'Python ↔ JS cross-check',
+        runCross: 'Python  /  JS cross-check',
         runMerge: 'Merge outward figures',
         runBuildData: 'Rebuild page data (data/*.js)',
         runGate: 'Full national-first-class gate',
@@ -10210,7 +10224,7 @@ window.__deps = {
       for (let i = 1; i <= cnt; i++) out.push({ n: i, hz: base * i, ratio: i, cents: 1200 * Math.log2(i) });
       return out;
     },
-    /* FALLBACK: 品丝位置 d_n = L·(1 − 2^(−n/12)) */
+    /* FALLBACK: 品丝位置 d_n = L·(1 - 2^(-n/12)) */
     fret_positions(L, n) {
       const len = isNum(L) && L > 0 ? L : 650;
       const cnt = isNum(n) && n > 0 ? Math.round(n) : 12;
@@ -10409,7 +10423,7 @@ window.__deps = {
   function fmtSigned(v, d) {
     if (!isNum(v)) return '—';
     const s = fmt(Math.abs(v), d);
-    return (v > 0 ? '+' : (v < 0 ? '−' : '')) + s;
+    return (v > 0 ? '+' : (v < 0 ? '-' : '')) + s;
   }
   function fmtSci(x) {
     if (!isNum(x)) return '—';
@@ -10417,7 +10431,7 @@ window.__deps = {
     if (Math.abs(x) >= 1e-4) return fmt(x, 12);
     const e = Math.floor(Math.log10(Math.abs(x)));
     const m = x / Math.pow(10, e);
-    return fmt(m, 3) + '×10^' + e;
+    return fmt(m, 3) + 'e' + e;
   }
   function cjkCount(s) {
     if (!s) return 0;
@@ -10669,10 +10683,10 @@ window.__deps = {
 
     renderReadouts($('#m1-readouts'), [
       { k: T('m1.readSteps'), v: n + ' / 12' },
-      { k: T('m1.readFifthEnd'), v: '×' + fmt(fifthEnd, 6) },
-      { k: T('m1.readOctaveEnd'), v: '×' + fmt(octEnd, 6) },
+      { k: T('m1.readFifthEnd'), v: fmt(fifthEnd, 6) },
+      { k: T('m1.readOctaveEnd'), v: fmt(octEnd, 6) },
       { k: T('m1.readGap'), v: fmtSigned(gap, 4), unit: T('ui.centsShort'), cls: Math.abs(gap) > 0.5 ? 'is-error' : null },
-      { k: T('m1.readRatio'), v: '×' + fmt(ratio, 8) },
+      { k: T('m1.readRatio'), v: fmt(ratio, 8) },
       { k: T('m1.readBeat'), v: fmt(beat, 2), unit: 'Hz' }
     ]);
     const slot = $('#viz-m1');
@@ -10690,7 +10704,7 @@ window.__deps = {
     figuresInto('#m1-figures', [
       figComputed(T('m1.check1'), fmt(chainTotal, 2), T('ui.centsShort'), null),
       figComputed(T('m1.check2'), fmt(gap12, 2), T('ui.centsShort'), 'kernel.pythagorean_comma_cents'),
-      figComputed(T('m1.check3'), '×' + fmt(ratio12, 8), '', null),
+      figComputed(T('m1.check3'), fmt(ratio12, 8), '', null),
       figComputed(T('m1.check4'), fmt(beat12, 2), 'Hz', null)
     ]);
   }
@@ -10831,9 +10845,9 @@ window.__deps = {
       return Math.abs(m2Cents(p.ratio) - 100);
     }));
     figuresInto('#m2-figures', [
-      figComputed(T('m2.check1'), constCheck < ZERO ? '0' : fmt(constCheck, 12), T('ui.centsShort'), null),
+      figComputed(T('m2.check1'), constCheck < ZERO ? '0' : fmtSci(constCheck), T('ui.centsShort'), null),
       figComputed(T('m2.check2'), fmtSigned(cents, 2), T('ui.centsShort'), null),
-      figComputed(T('m2.check3'), fmt(presErr, 9), T('ui.centsShort'), null),
+      figComputed(T('m2.check3'), fmtSci(presErr), T('ui.centsShort'), null),
       figComputed(T('m2.check4'), '701.9550', T('ui.centsShort'), null)
     ]);
   }
@@ -10929,7 +10943,7 @@ window.__deps = {
         if (state.m3.active >= 12 && i === 11) tr.className = 'is-active';
         tr.appendChild(el('td', null, null, String(i + 1)));
         tr.appendChild(el('td', 'lu-name', null, state.lang === 'zh' ? r.name_zh : r.name_en));
-        tr.appendChild(el('td', null, null, '×' + fmt(r.ratio, 6)));
+        tr.appendChild(el('td', null, null, fmt(r.ratio, 6)));
         tr.appendChild(el('td', null, null, fmt(r.hz, 2)));
         tr.appendChild(el('td', 'num-cents', null, fmt(r.cents, 2)));
         tr.appendChild(el('td', 'num-dev', null,
@@ -10952,10 +10966,10 @@ window.__deps = {
     refreshSlot('viz-m3');
 
     figuresInto('#m3-figures', [
-      figComputed(T('m3.check1'), '×' + fmt(1.5, 1), '', null),
+      figComputed(T('m3.check1'), fmt(1.5, 1) + 'x', '', null),
       figComputed(T('m3.check2'), fmt(gap, 4), T('ui.centsShort'), 'kernel.pythagorean_comma_cents'),
-      figComputed(T('m3.check3'), last ? '×' + fmt(last.ratio, 8) : '—', '', null),
-      figComputed(T('m3.check4'), '×1.5', '', null)
+      figComputed(T('m3.check3'), last ? fmt(last.ratio, 8) : '—', '', null),
+      figComputed(T('m3.check4'), '1.5x', '', null)
     ]);
   }
 
@@ -11036,8 +11050,8 @@ window.__deps = {
     { key: 'd1', expr: 'r¹² = 2', val: null },
     { key: 'd2', expr: '2^(1/2) = √2', val: Math.SQRT2 },
     { key: 'd3', expr: '2^(1/4) = √(√2)', val: Math.sqrt(Math.SQRT2) },
-    { key: 'd4', expr: '2^(1/3) = ∛2', val: Math.cbrt(2) },
-    { key: 'd5', expr: '2^(1/6) = √(∛2)', val: Math.sqrt(Math.cbrt(2)) },
+    { key: 'd4', expr: '2^(1/3) ', val: Math.cbrt(2) },
+    { key: 'd5', expr: '2^(1/6) = √(2^(1/3))', val: Math.sqrt(Math.cbrt(2)) },
     { key: 'd6', expr: '2^(1/4) ÷ 2^(1/6)', val: Math.sqrt(Math.SQRT2) / Math.sqrt(Math.cbrt(2)) },
     { key: 'd7', expr: '密率¹²', val: Math.pow(Math.pow(2, 1 / 12), 12) }
   ];
@@ -11073,10 +11087,10 @@ window.__deps = {
     const et = K.equal_temperament(12);
     const maxDevEt = Math.max.apply(null, et.map((x) => Math.abs(x.cents - x.index * 100)));
     figuresInto('#m4-figures', [
-      figComputed(T('m4.check1'), fmt(Math.abs(MILU - Math.pow(2, 1 / 12)), 16), '', null),
-      figComputed(T('m4.check2'), fmt(Math.abs(power - 2), 16), '', null),
-      figComputed(T('m4.check3'), fmt(Math.abs(litRecorded - MILU), 12), '', null),
-      figComputed(T('m4.check4'), fmt(maxDevEt, 16), T('ui.centsShort'), null)
+      figComputed(T('m4.check1'), fmtSci(Math.abs(MILU - Math.pow(2, 1 / 12))), '', null),
+      figComputed(T('m4.check2'), fmtSci(Math.abs(power - 2)), '', null),
+      figComputed(T('m4.check3'), fmtSci(Math.abs(litRecorded - MILU)), '', null),
+      figComputed(T('m4.check4'), fmtSci(maxDevEt), T('ui.centsShort'), null)
     ]);
   }
 
@@ -11514,7 +11528,7 @@ window.__deps = {
 
     const minFrac = Math.min.apply(null, HUI.map((h) => h.frac));
     figuresInto('#m6-figures', [
-      figComputed(T('m6.check1'), 'fₙ = n·f₀', '', null),
+      figComputed(T('m6.check1'), 'f(n) = n·f(0)', '', null),
       figComputed(T('m6.check2'), fmtSigned(interval, 2), T('ui.centsShort'), null),
       figComputed(T('m6.check3'), '1/' + String(Math.round(1 / minFrac)), '', null),
       figComputed(T('m6.check4'), '2', T('ui.notes'), null)
@@ -11578,7 +11592,7 @@ window.__deps = {
       if (state.m6.hui === h.hui) tr.className = 'is-active';
       tr.appendChild(el('td', null, null, String(h.hui)));
       tr.appendChild(el('td', null, null, h.fracText));
-      tr.appendChild(el('td', 'num-cents', null, '×' + n));
+      tr.appendChild(el('td', 'num-cents', null, String(n)));
       tr.appendChild(el('td', null, null, fmt(f, 2)));
       tr.appendChild(el('td', 'num-dev', null, fmt(1200 * Math.log2(n), 2)));
       tbody.appendChild(tr);
@@ -11740,7 +11754,7 @@ window.__deps = {
     }
 
     figuresInto('#m7-figures', [
-      figComputed(T('m7.check1'), 'dₙ = L(1−2^(−n/12))', '', null),
+      figComputed(T('m7.check1'), 'L(1-2^(-n/12))', '', null),
       figComputed(T('m7.check2'), fmt(FRET_L / 2, 1), 'mm', null),
       figComputed(T('m7.check3'), '386.3137', T('ui.centsShort'), null),
       figComputed(T('m7.check4'), '400', T('ui.centsShort'), null)
@@ -12128,7 +12142,7 @@ window.__deps = {
         x: (cx + 10).toFixed(1), y: (cy - 14).toFixed(1), fill: 'var(--red-text)',
         'font-size': '12', 'font-family': 'monospace'
       });
-      t.textContent = '+' + fmt(m1Gap(12), 2) + ' ¢';
+      t.textContent = '+' + fmt(m1Gap(12), 2);
       f.svg.appendChild(t);
     }
     // 八度参考环
@@ -12252,7 +12266,7 @@ window.__deps = {
     };
     lb(cx, 218, T('m6.bellFront'), 'var(--cyan-text)');
     lb(cx + 62, 232, T('m6.bellSide'), 'var(--gold-text)');
-    lb(cx, 268, '+386.31 ¢', 'var(--gold-text)');
+    lb(cx, 268, '+386.31', 'var(--gold-text)');
 
     const mkHit = (x, y, r, tone) => {
       const g = svgEl('g', { class: 'bell-hit', tabindex: '0', role: 'button', 'aria-label': tone === 'front' ? T('m6.bellHitFront') : T('m6.bellHitSide') });
@@ -12325,7 +12339,7 @@ window.__deps = {
     jt.textContent = T('m7.fretJust');
     f.svg.appendChild(jt);
     const cap = svgEl('text', { x: x0, y: 134, fill: 'var(--muted-2)', 'font-size': '10' });
-    cap.textContent = 'd = L(1 − 2^(−n/12))';
+    cap.textContent = 'd = L(1 - 2^(-n/12))';
     f.svg.appendChild(cap);
   }
 
@@ -12355,7 +12369,7 @@ window.__deps = {
     lab(px(0), py(0) + 14, 'A4', 'var(--muted-2)');
     lab(px(3.25), py(0) + 14, 'C8', 'var(--muted-2)');
     lab(pad - 4, py(30) + 3, '+30', 'var(--red-text)', 'end');
-    lab(pad - 4, py(-30) + 3, '−30', 'var(--red-text)', 'end');
+    lab(pad - 4, py(-30) + 3, '-30', 'var(--red-text)', 'end');
     lab(pad, 16, T('m7.stretchRubric'), 'var(--muted-2)', 'start');
     vizNote(host, 'railsback');
   }
