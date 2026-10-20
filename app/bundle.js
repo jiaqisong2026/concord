@@ -7098,8 +7098,8 @@ window.GlossaryData = {
    "term_zh": "十二平均律",
    "term_en": "twelve-tone equal temperament (12-TET)",
    "cat": "tuning",
-   "def_zh": "把一个八度等分为十二个 100 音分半音的律制，当代全球乐器与音乐工业的默认标准。",
-   "def_en": "The system dividing the octave into twelve semitones of 100 cents each, now the default standard of global instrument making.",
+   "def_zh": "把一个八度等分为十二个 100 音分半音的律制；现代乐器（钢琴/吉他品丝可逐品复算）与音乐工业的主流实践采用这一解（DAW 默认音准属行业实践，厂商文档待核验）。",
+   "def_en": "A tuning system dividing the octave into twelve semitones of 100 cents each; adopted by modern instruments (piano and guitar frets can be recomputed fret by fret) and the mainstream practice of the music industry (DAW defaults are industry practice; vendor documentation pending verification).",
    "source_ids": [
     "S9",
     "S3"
@@ -8990,27 +8990,27 @@ window.__metrics = {
   "app_version": "1.0.0"
  },
  "live": {
-  "url": "file:///F:/sjq/%E6%95%B0%E5%AA%92/11_%E5%90%8C%E5%BE%8B_%E5%9B%BD%E9%99%85%E4%B8%93%E9%A1%B9%E8%B5%9B/01_%E4%BD%9C%E5%93%81%E6%9C%AC%E4%BD%93/%E5%90%8C%E5%BE%8B-%E5%BE%8B%E5%AD%A6%E4%BA%A4%E4%BA%92%E5%AE%9E%E9%AA%8C%E5%AE%A4/index.html",
+  "url": "https://secret-justice.github.io/concord/app/",
   "http": 200,
-  "axe": null,
-  "fps_mean": 59.95,
-  "fps_min": 59.71,
-  "heap_growth_mb": -38.99,
+  "axe": 0,
+  "fps_mean": 60.01,
+  "fps_min": 59.57,
+  "heap_growth_mb": -0.33,
   "runtime_errors": 0
  },
  "video": {
-  "duration_s": null,
-  "size_mb": null,
-  "lufs": null,
-  "fps": null,
+  "duration_s": 270.0,
+  "size_mb": 89.82,
+  "lufs": -16.2,
+  "fps": 30.0,
   "res": null
  },
  "pack": {
-  "entries": null,
-  "size_mb": null,
-  "pdfs": null,
-  "screenshots": null,
-  "anon_hits": null
+  "entries": 58,
+  "size_mb": 10.87,
+  "pdfs": 27,
+  "screenshots": 10,
+  "anon_hits": 0
  },
  "evidence": {
   "sources": 32,
@@ -9036,17 +9036,7 @@ window.__metrics = {
  },
  "_schema": "concord.metrics/v1",
  "_pending": [
-  "live.axe",
-  "video.duration_s",
-  "video.size_mb",
-  "video.lufs",
-  "video.fps",
-  "video.res",
-  "pack.entries",
-  "pack.size_mb",
-  "pack.pdfs",
-  "pack.screenshots",
-  "pack.anon_hits"
+  "video.res"
  ],
  "_sources": {
   "work": "metrics.json",
@@ -9058,7 +9048,7 @@ window.__metrics = {
   "evidence": "metrics.json",
   "audio": "verify_audio.js"
  },
- "_fingerprint": "sha256:466331bf2659efff"
+ "_fingerprint": "sha256:16d704f910d0ea20"
 };
 ;
 /* ===== 15. data/deps.js ===== */
