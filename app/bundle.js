@@ -5673,8 +5673,8 @@ window.TuningData = {
     "A#",
     "F"
    ],
-   "basis_zh": "弦长三分损一（×2/3）与三分益一（×4/3）交替生律，12 次后仲吕不能回到黄钟，差 23.46 音分。",
-   "basis_en": "Alternating 2/3 (diminish) and 4/3 (augment) string-length steps; after 12 steps the cycle misses the octave by 23.46 cents.",
+   "basis_zh": "弦长三分损一（×2/3）与三分益一（×4/3）交替生律：十二律 = 黄钟 + 生律 11 次；再走第 12 次本应回到黄钟，实际高出 23.46 音分（毕氏音差），故三分损益律不闭合。",
+   "basis_en": "Alternating 2/3 (diminish) and 4/3 (augment) string-length steps: the twelve lü = Huangzhong + 11 generation steps; a 12th step should return to Huangzhong but lands 23.46 cents sharp (Pythagorean comma) — the cycle never closes.",
    "source": "数学定义（3:2 五度链），与《管子·地员》《吕氏春秋·音律》所载三分损益法一致",
    "status": "computed"
   },
