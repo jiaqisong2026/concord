@@ -222,16 +222,16 @@ window.TuningData = {
    "note_names_zh": null,
    "note_names_en": [
     "C",
-    "C#",
+    "C♯",
     "D",
-    "D#",
+    "E♭",
     "E",
     "F",
-    "F#",
+    "F♯",
     "G",
-    "G#",
+    "G♯",
     "A",
-    "A#",
+    "B♭",
     "B"
    ],
    "map_to_semitone": [
@@ -280,16 +280,16 @@ window.TuningData = {
    "note_names_zh": null,
    "note_names_en": [
     "C",
-    "C#",
+    "C♯",
     "D",
-    "D#",
+    "E♭",
     "E",
     "F",
-    "F#",
+    "F♯",
     "G",
-    "G#",
+    "G♯",
     "A",
-    "A#",
+    "B♭",
     "B"
    ],
    "map_to_semitone": [

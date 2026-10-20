@@ -398,37 +398,66 @@
     }
 
     /* ---------------------------------------------------------------- 钟
-     * 非谐分音（来 core/tuning.js 的 BELL_PARTIALS）+ 每分音独立指数衰减。
-     * 钟的音色特征就是「分音不是整数倍」——与 harmonic_series 对照着听。
+     * 非谐分音（取自 core/tuning.js 的 BELL_PARTIALS）+ 每分音独立指数衰减。
+     *
+     * 为什么在 JS 里算样本、再用 AudioBufferSourceNode 播放（而不是每分音一个
+     * OscillatorNode）：Chromium 的振荡器 + AudioParam 自动化在 float32 内部累积，
+     * 同一串调用两次渲染会差 1 ULP —— 那样「确定性」只能精确到 −120 dBFS。
+     * 钟的分音**本来就是数值可算的**（ratio × f0、指数衰减），直接算成缓冲后
+     * 两次渲染**逐位相同**，门禁 G1.4 的确定性才是一个干净的真命题。
      */
     function bell(f0, dur, o) {
       var f = Number(f0);
       var d = Math.max(0.05, Number(dur) || 1.5);
       var oo = o || {};
-      var t0 = t0Now();
+      var sr = C.sampleRate;
       var parts = T.bell_partials(f, Math.min(T.BELL_PARTIALS.length, oo.partials || 12));
-      var nodes = [], srcs = [];
-      for (var i = 0; i < parts.length; i++) {
-        var p = parts[i];
-        if (p.hz >= C.sampleRate / 2) { continue; }        // 超过 Nyquist 的分音丢弃
-        var osc = C.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = p.hz;
-        var g = C.createGain();
+      var total = Math.max(9, Math.round(sr * (d + CFG.release)));
+      var buf = new Float32Array(total);
+      var attackS = Math.max(1, Math.round(CFG.attack * sr));
+      var releaseS = Math.max(1, Math.round(CFG.release * sr));
+      var relStart = Math.max(0, total - releaseS);
+      for (var k = 0; k < parts.length; k++) {
+        var p = parts[k];
+        if (p.hz >= sr / 2) { continue; }             // 超过 Nyquist 的分音丢弃
         var amp = CFG.bellGain * p.amp;
         // 高分音衰减更快（钟体的高频辐射更"干"）
-        var decay = d * Math.min(1.0, CFG.bellDecayScale /
-          (1.0 + CFG.bellDecayRolloff * (p.n - 1)));
-        g.gain.setValueAtTime(0.0001, t0);
-        g.gain.linearRampToValueAtTime(amp, t0 + CFG.attack);
-        g.gain.exponentialRampToValueAtTime(Math.max(0.0001, amp * 0.001), t0 + decay);
-        osc.connect(g);
-        g.connect(master);
-        osc.start(t0);
-        osc.stop(t0 + d + CFG.release);
-        nodes.push(g); srcs.push(osc);
+        var tauS = d * Math.min(1.0, CFG.bellDecayScale /
+          (1.0 + CFG.bellDecayRolloff * (p.n - 1))) * 0.35;
+        var omega = 2.0 * Math.PI * p.hz / sr;
+        var decayPerSample = Math.exp(-1.0 / (tauS * sr));
+        var env = 1.0;
+        for (var i = 0; i < total; i++) {
+          var a = 1.0;
+          if (i < attackS) { a = i / attackS; }        // 起振（防爆音）
+          if (i > relStart) { a *= (total - i) / releaseS; }  // 收尾淡出（防截断咔哒）
+          buf[i] += amp * a * env * Math.sin(omega * i);
+          env *= decayPerSample;
+        }
       }
-      return registerVoice(nodes, srcs, t0);
+      // 归一化到 ±1 内（多分音相加可能超过 1）
+      var peak = 0;
+      for (var j = 0; j < total; j++) { var q = buf[j] < 0 ? -buf[j] : buf[j]; if (q > peak) { peak = q; } }
+      if (peak > 1.0) {
+        var inv = 1.0 / peak;
+        for (j = 0; j < total; j++) { buf[j] *= inv; }
+      }
+      var audioBuf = C.createBuffer(1, total, sr);
+      if (typeof audioBuf.copyToChannel === 'function') {
+        audioBuf.copyToChannel(buf, 0);
+      } else {
+        audioBuf.getChannelData(0).set(buf);
+      }
+      var src = C.createBufferSource();
+      src.buffer = audioBuf;
+      var g = C.createGain();
+      var t0 = t0Now();
+      g.gain.setValueAtTime(1.0, t0);
+      src.connect(g);
+      g.connect(master);
+      src.start(t0);
+      src.stop(t0 + d + CFG.release + 0.01);
+      return registerVoice([g], [src], t0);
     }
 
     /* ---------------------------------------------------------------- 弦

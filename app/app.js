@@ -340,6 +340,14 @@
     const s = fmt(Math.abs(v), d);
     return (v > 0 ? '+' : (v < 0 ? '−' : '')) + s;
   }
+  function fmtSci(x) {
+    if (!isNum(x)) return '—';
+    if (x === 0) return '0';
+    if (Math.abs(x) >= 1e-4) return fmt(x, 12);
+    const e = Math.floor(Math.log10(Math.abs(x)));
+    const m = x / Math.pow(10, e);
+    return fmt(m, 3) + '×10^' + e;
+  }
   function cjkCount(s) {
     if (!s) return 0;
     const m = String(s).match(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/g);
@@ -423,7 +431,7 @@
     muted: false,
     m1: { steps: 0 },
     m2: { ratio: 0.75, preset: null },
-    m3: { active: 0 },
+    m3: { active: 12 },
     m4: { step: 0 },
     m5: { sel: ['sanfen', 'tet12', 'ji5'], a: 'sanfen', b: 'tet12', region: 'all', mapId: 'china' },
     m6: { tone: 'front', hui: 6 },
@@ -444,11 +452,12 @@
   function loadOptionalDeps() {
     return new Promise((resolve) => {
       const srcs = [];
-      if (DEP.tuning && DEP.paths && DEP.paths.tuning) srcs.push(DEP.paths.tuning);
-      if (DEP.synth && DEP.paths && DEP.paths.synth) srcs.push(DEP.paths.synth);
+      // 静态 <script> 已接入的依赖不再重复注入（全局存在即视为已就绪）
+      if (DEP.tuning && !W.Tuning && DEP.paths && DEP.paths.tuning) srcs.push(DEP.paths.tuning);
+      if (DEP.synth && !W.Synth && DEP.paths && DEP.paths.synth) srcs.push(DEP.paths.synth);
       (DEP.viz || []).forEach((n) => {
         const p = DEP.viz_paths && DEP.viz_paths[n];
-        if (p) srcs.push(p);
+        if (p && !(W.Viz && W.Viz[n])) srcs.push(p);
       });
       if (!srcs.length) { resolve(); return; }
       let i = 0;
@@ -555,17 +564,23 @@
     opts: {},
     state() {
       const n = clamp(state.m1.steps, 0, M1_STEPS);
-      // 始终交出完整的 12 步链：默认即画出整条淡色螺旋，active 逐步点亮
-      const steps = [];
-      for (let i = 0; i <= M1_STEPS; i++) {
-        steps.push({
+      // previewSteps = 完整 12 步（淡色底图）；steps = 已揭示的步数
+      // 注意：组件按「步」计数（每步一个音分增量），圆心即黄钟起点，不在 steps 里
+      const full = [];
+      for (let i = 1; i <= M1_STEPS; i++) {
+        full.push({
           step: i,
           name: String(i),
           cents: i * 1200 * Math.log2(1.5),
-          operation: i === 0 ? 'start' : '×3/2'
+          operation: '×3/2'
         });
       }
-      return { steps: steps, closureCents: m1Gap(M1_STEPS), active: n };
+      return {
+        steps: full.slice(0, n),
+        previewSteps: full,
+        closureCents: m1Gap(M1_STEPS),
+        active: n > 0 ? n - 1 : null
+      };
     },
     onSelect(i) {
       if (isNum(i)) { state.m1.steps = clamp(i, 0, M1_STEPS); m1Render(); }
@@ -856,7 +871,7 @@
     const last = rows.length >= 12 ? rows[11] : null;
     renderReadouts($('#m3-readouts'), [
       { k: T('m3.readClosing'), v: fmtSigned(gap, 4), unit: T('ui.centsShort'), cls: 'is-error' },
-      { k: T('m3.readNote'), v: last ? (state.lang === 'zh' ? last.name_zh : last.name_en) : '—' },
+      { k: T('m3.readNote'), v: last ? fmt(last.cents, 3) : '—', unit: T('ui.centsShort') },
       { k: T('m3.tableDev'), v: last ? fmtSigned(last.cents - Math.round(last.cents / 100) * 100, 2) : '—', unit: T('ui.centsShort') },
       { k: T('ui.status'), v: T('m3.statusOpen'), cls: 'is-error' }
     ]);
@@ -878,13 +893,23 @@
     opts: {},
     state() {
       const n = clamp(state.m3.active, 0, 12);
-      const steps = M3_PITCHES.slice(0, Math.max(1, n)).map((p, i) => ({
-        step: i,
-        name: state.lang === 'zh' ? p.name_zh : p.name_en,
-        cents: p.chainCents,
-        hz: p.hz
-      }));
-      return { steps: steps, closureCents: m1Gap(12), active: n > 0 ? n - 1 : 0 };
+      const full = [];
+      for (let i = 0; i < 11; i++) {
+        const p = M3_PITCHES[i + 1];
+        full.push({
+          step: i + 1,
+          name: p ? (state.lang === 'zh' ? p.name_zh : p.name_en) : String(i + 1),
+          cents: (i + 1) * 1200 * Math.log2(1.5),
+          operation: '×3/2'
+        });
+      }
+      full.push({ step: 12, name: T('m3.closureAttempt'), cents: 12 * 1200 * Math.log2(1.5), operation: '×3/2' });
+      return {
+        steps: full.slice(0, n),
+        previewSteps: full,
+        closureCents: m1Gap(12),
+        active: n > 0 ? n - 1 : null
+      };
     },
     onSelect(i) {
       if (isNum(i)) { state.m3.active = clamp(i + 1, 1, 12); m3Render(); }
@@ -962,9 +987,9 @@
     }
     const power = Math.pow(MILU, 12);
     renderReadouts($('#m4-power'), [
-      { k: T('m4.powerResult'), v: fmt(power, 15), cls: 'is-ok' },
+      { k: T('m4.powerResult'), v: power.toPrecision(17), cls: 'is-ok' },
       { k: T('m4.powerTarget'), v: '2' },
-      { k: T('m4.powerDiff'), v: fmt(Math.abs(power - 2), 16), unit: '', cls: 'is-ok' }
+      { k: T('m4.powerDiff'), v: fmtSci(Math.abs(power - 2)), unit: '', cls: 'is-ok' }
     ]);
     const litRecorded = 1.059463094;
     renderReadouts($('#m4-lit'), [
@@ -995,6 +1020,7 @@
       item.appendChild(el('div', 'tl-title', null, state.lang === 'zh' ? ev.title_zh : ev.title_en));
       const body = el('p', 'tl-body', null, state.lang === 'zh' ? ev.body_zh : ev.body_en);
       item.appendChild(body);
+      if (ev.status) item.appendChild(el('span', 'tl-status', null, statusText(ev.status)));
       if (ev.source) item.appendChild(el('div', 'tl-src', null, T('ui.source') + '：' + ev.source));
       host.appendChild(item);
     });
@@ -1057,12 +1083,17 @@
     return state.lang === 'zh' ? (s.name_short_zh || s.name_zh || s.id) : (s.name_short_en || s.name_en || s.id);
   }
   function statusBadge(s) {
+    // 律制表口径：pending → 「文献参考值」（内部状态仍是待核验，M8 说明）
     const st = s.status || 'pending';
-    return { text: statusText(st), cls: 'sys-badge is-' + (st === 'research' ? 'verified' : st) };
+    const map = {
+      verified: 'ui.statusVerified', research: 'ui.statusResearch', official: 'ui.statusOfficial',
+      computed: 'ui.statusComputed', pending: 'ui.statusLiterature'
+    };
+    return { text: T(map[st] || 'ui.statusLiterature'), cls: 'sys-badge is-' + (st === 'pending' ? 'pending' : 'verified') };
   }
   function statusText(st) {
     const map = {
-      verified: 'ui.statusVerified', research: 'ui.statusResearch',
+      verified: 'ui.statusVerified', research: 'ui.statusResearch', official: 'ui.statusOfficial',
       pending: 'ui.statusPending', computed: 'ui.statusComputed'
     };
     return T(map[st] || 'ui.statusPending');
@@ -1131,9 +1162,10 @@
 
   function maxDevVsET(sys) {
     if (!sys || !sys.cents) return 0;
+    // 与「十二平均律最近音级」比：c 距最近的 100 音分整数格多远（不假设音数 = 12）
     let mx = 0;
-    sys.cents.forEach((c, i) => {
-      const d = Math.abs(c - i * 100);
+    sys.cents.forEach((c) => {
+      const d = Math.abs(c - Math.round(c / 100) * 100);
       if (d > mx) mx = d;
     });
     return mx;
@@ -1191,6 +1223,7 @@
     const all = allSystems();
     all.forEach((s) => {
       const on = state.m5.sel.indexOf(s.id) >= 0;
+      const li = el('li');
       const btn = el('button', 'sys-item', { type: 'button', 'aria-pressed': String(on) });
       const left = el('span');
       left.appendChild(el('span', 'sys-name', null, sysName(s)));
@@ -1204,7 +1237,8 @@
         else state.m5.sel.push(s.id);
         m5Render();
       });
-      host.appendChild(btn);
+      li.appendChild(btn);
+      host.appendChild(li);
     });
   }
 
@@ -1384,20 +1418,6 @@
       };
     }
   });
-  defineViz('viz-m6-hui', {
-    component: 'spectrum',
-    opts: {},
-    state() { return { partials: currentSpectrum(), f0: BELL_F0 }; },
-    fallback(host) { return drawSpectrumFallback(host); }
-  });
-
-  function bellPartials() {
-    return safeV(() => K.bell_partials(BELL_F0, 8), FALLBACK_KERNEL.bell_partials(BELL_F0, 8));
-  }
-  function currentSpectrum() {
-    return safeV(() => K.harmonic_series(GUQIN_F0, 8), FALLBACK_KERNEL.harmonic_series(GUQIN_F0, 8));
-  }
-
   function m6Render() {
     const fq = bellFreqs(state.m6.bell);
     const interval = safeV(() => K.cents(fq.front, fq.side), BELL_SIDE_CENTS);
@@ -1417,7 +1437,7 @@
     const specSlot = D.getElementById('viz-m6-spec');
     if (specSlot) { lazyMountSlot(specSlot); refreshSlot('viz-m6-spec'); }
     const huiSlot = D.getElementById('viz-m6-hui');
-    if (huiSlot) lazyMountSlot(huiSlot);
+    if (huiSlot) { lazyMountSlot(huiSlot); refreshSlot('viz-m6-hui'); }
     renderHuiChips();
     renderHuiTable();
 
@@ -1610,24 +1630,6 @@
     state() { return { systems: m7CompareSystems(), lang: state.lang }; },
     fallback(host) { return drawIsochordFallback(host); }
   });
-  defineViz('viz-m7-stretch', {
-    component: null,
-    opts: {},
-    state() { return { curve: 'railsback' }; },
-    fallback(host) {
-      return {
-        update() { drawStretchInto(host); },
-        highlight() {}, resize() {}, destroy() {}, setLang() {}
-      };
-    }
-  });
-  defineViz('viz-m7-iso', {
-    component: 'isochord',
-    opts: {},
-    state() { return { systems: m7CompareSystems(), lang: state.lang }; },
-    fallback(host) { return drawIsochordFallback(host); }
-  });
-
   function m7CompareSystems() {
     const ids = ['tet12', 'sanfen', 'ji5', 'meantone', 'werck3'];
     return ids.map(findSystem).filter(Boolean);
@@ -1705,7 +1707,11 @@
   function renderM8Metrics() {
     const m = W.__metrics || {};
     const a = m.app || {};
-    const pending = (m._pending || []).length;
+    const PAGE_SECTIONS = ['app', 'kernel', 'audio', 'evidence'];
+    const pending = (m._pending || []).filter((p) => {
+      const sec = String(p).split('.')[0];
+      return PAGE_SECTIONS.indexOf(sec) >= 0;
+    }).length;
     renderReadouts($('#m8-metrics'), [
       { k: T('m8.mModules'), v: a.modules != null ? String(a.modules) : '8' },
       { k: T('m8.mModulesReady'), v: a.modules_ready != null ? String(a.modules_ready) : String(readyCount()) },
@@ -1716,6 +1722,19 @@
       { k: T('m8.mAxe'), v: a.a11y_axe_violations != null ? String(a.a11y_axe_violations) : (a.axe_violations != null ? String(a.axe_violations) : '—') },
       { k: T('m8.mCjk'), v: a.i18n_en_cjk_ratio != null ? (a.i18n_en_cjk_ratio * 100).toFixed(2) : '—', unit: '%' },
       { k: T('m8.mVersion'), v: a.app_version || APP_VERSION },
+      { k: T('m8.mKernelAssertions'), v: (m.kernel && m.kernel.assertions != null)
+          ? (String(m.kernel.assertions_passed != null ? m.kernel.assertions_passed : m.kernel.assertions) + ' / ' + String(m.kernel.assertions))
+          : '—', cls: (m.kernel && m.kernel.assertions) ? 'is-ok' : null },
+      { k: T('m8.mCrossChecks'), v: (m.kernel && m.kernel.cross_checks != null) ? String(m.kernel.cross_checks) : '—' },
+      { k: T('m8.mAudioAssertions'), v: (m.audio && m.audio.total != null)
+          ? (String(m.audio.passed) + ' / ' + String(m.audio.total)) : '—',
+        cls: (m.audio && m.audio.failed === 0) ? 'is-ok' : null },
+      { k: T('m8.mAudioCents', { g: (m.audio && m.audio.single_tone_groups) || '—' }),
+        v: (m.audio && m.audio.max_single_tone_cents_error != null) ? fmt(m.audio.max_single_tone_cents_error, 6) : '—',
+        unit: T('ui.centsShort') },
+      { k: T('m8.mAudioBeat', { g: (m.audio && m.audio.beat_groups) || '—' }),
+        v: (m.audio && m.audio.max_beat_hz_error != null) ? fmt(m.audio.max_beat_hz_error, 6) : '—',
+        unit: 'Hz' },
       { k: T('m8.mPending'), v: String(pending), cls: pending ? 'is-error' : 'is-ok' }
     ]);
 
@@ -2411,17 +2430,19 @@
     return bad;
   }
 
-  /** i18n 键泄漏：正文里不应出现任何字典键名（渲染失败才会出现） */
+  /** i18n 键泄漏：正文里不应出现形如 a.b 的字典键（渲染失败才会出现）。
+      白名单：文件名后缀（.js/.py/.json…）、版本号、域名类短串。 */
+  const FILE_EXT = /^(js|json|css|html|htm|md|py|mp4|pdf|png|jpg|jpeg|svg|gif|txt|yml|yaml|zip|docx|pptx|xlsx|csv|wav|mp3|asr|ps1|bat)$/;
   function i18nLeaks() {
-    if (!W.I18N) return [];
     const body = (D.body && (D.body.innerText || D.body.textContent)) || '';
     const out = [];
     try {
-      const keys = W.I18N.keys();
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i];
-        if (k.length < 6) continue;
-        if (body.indexOf(k) >= 0) out.push(k);
+      const re = /\b([a-z][a-z0-9_]{1,20})\.([a-z][a-z0-9_]{1,24})\b/g;
+      let m;
+      while ((m = re.exec(body)) !== null) {
+        if (FILE_EXT.test(m[2])) continue;                 // 文件名，不是 i18n 键
+        if (/^(py|node|npm|npx|sh|cd|ls|rm|git)$/.test(m[1])) continue;
+        out.push(m[0]);
         if (out.length >= 40) break;
       }
     } catch (e) { /* noop */ }

@@ -297,7 +297,7 @@ main:focus { outline: none; }
   color: rgba(200, 163, 90, .30);
   pointer-events: none;
 }
-.cover-grid svg { width: 100%; height: 100%; opacity: .55; }
+.cover-grid svg { width: 100%; height: 100%; opacity: .85; }
 .cover-inner {
   position: relative;
   max-width: 860px;
@@ -500,7 +500,7 @@ main:focus { outline: none; }
   overflow: hidden;
 }
 .viz-slot.is-ready { border-color: var(--line); }
-.viz-slot.viz-tall { min-height: 300px; }
+.viz-slot.viz-tall { height: 340px; min-height: 340px; }
 .viz-fallback { width: 100%; height: 100%; }
 .viz-fallback svg { width: 100%; height: auto; display: block; }
 .viz-fallback-note {
@@ -887,9 +887,20 @@ input[type="range"]::-moz-range-thumb {
 }
 .tl-title { font-size: 13.6px; color: var(--light); margin: 1px 0 2px; font-weight: 600; }
 .tl-body { font-size: 12.4px; color: var(--muted); line-height: 1.66; margin: 0; }
+.tl-status {
+  display: inline-block;
+  font-size: 9.5px;
+  letter-spacing: .04em;
+  color: var(--cyan-text);
+  border: 1px solid rgba(110, 143, 163, .34);
+  border-radius: 2px;
+  padding: 0 4px;
+  margin: 3px 0 2px;
+}
 .tl-src { font-size: 10.5px; color: var(--muted-2); }
 
 /* ---------------------------------------------------------------- M5 律制表 */
+.sys-list > li { margin: 0; padding: 0; list-style: none; }
 .sys-list { display: flex; flex-direction: column; gap: 1px; background: var(--line-soft); border: 1px solid var(--line-soft); margin-top: var(--sp-2); }
 .sys-item {
   display: grid;

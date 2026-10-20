@@ -145,7 +145,7 @@
     'color:var(--c-light,#F0ECE2);font-family:var(--font-ui,"Segoe UI","Microsoft YaHei",system-ui,sans-serif);font-size:13px;line-height:1.45;}',
     '.vz-ruler-plot{position:relative;flex:1 1 auto;display:flex;flex-direction:column;min-height:120px;}',
     '.vz-ruler-rows{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:2px 0;min-height:0;scrollbar-gutter:stable;}',
-    '.vz-ruler-row{display:flex;align-items:center;gap:8px;min-height:30px;}',
+    '.vz-ruler-row{display:flex;align-items:center;gap:8px;min-height:27px;}',
     '.vz-ruler-name{flex:0 0 96px;max-width:96px;font-size:11.5px;opacity:.86;text-align:right;overflow:hidden;',
     'text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:5px;justify-content:flex-end;}',
     '.vz-ruler-dot{width:7px;height:7px;border-radius:50%;background:var(--row-color,var(--c-bronze,#C8A35A));flex:0 0 auto;}',
@@ -160,32 +160,49 @@
     '.vz-ruler-mark:focus-visible{outline:2px solid var(--c-light,#F0ECE2);outline-offset:1px;border-radius:3px;}',
     '.vz-ruler-mark.is-active::before{opacity:1;width:3px;margin-left:-1.5px;box-shadow:0 0 6px var(--row-color,var(--c-bronze,#C8A35A));}',
     '.vz-ruler-mark.is-out::before{background:var(--c-red,#C0392B);}',
-    '.vz-ruler-axis{position:relative;height:34px;margin:0 0 0 104px;border-top:1px solid rgba(240,236,226,.22);}',
+    '.vz-ruler-axis{position:relative;height:30px;margin:0 0 0 104px;border-top:1px solid rgba(240,236,226,.22);}',
     '.vz-ruler-tick{position:absolute;top:0;width:1px;height:5px;background:rgba(240,236,226,.3);}',
     '.vz-ruler-tick.is-major{height:8px;background:rgba(240,236,226,.5);}',
     '.vz-ruler-tick-lbl{position:absolute;top:10px;font-size:9.5px;opacity:.62;transform:translateX(-50%);',
     'font-variant-numeric:tabular-nums;white-space:nowrap;}',
     '.vz-ruler-tick-lbl.is-first{transform:none;}',
     '.vz-ruler-tick-lbl.is-last{transform:translateX(-100%);}',
-    '.vz-ruler-guide-wrap{position:absolute;left:104px;right:0;top:0;bottom:34px;pointer-events:none;}',
+    '.vz-ruler-guide-wrap{position:absolute;left:104px;right:0;top:0;bottom:30px;pointer-events:none;}',
     '.vz-ruler-guide{position:absolute;top:0;bottom:0;width:1px;background:var(--c-light,#F0ECE2);opacity:0;',
     'pointer-events:none;transition:opacity 120ms linear;}',
     '.vz-ruler-guide.is-on{opacity:.45;}',
-    '.vz-ruler-readout{min-height:34px;border-top:1px solid rgba(240,236,226,.12);padding-top:6px;font-size:12px;opacity:.94;}',
+    '.vz-ruler-readout{min-height:30px;border-top:1px solid rgba(240,236,226,.12);padding-top:5px;font-size:11.5px;opacity:.94;}',
     '.vz-ruler-readout .main{font-variant-numeric:tabular-nums;}',
     '.vz-ruler-readout .dev{color:var(--c-bronze,#C8A35A);font-variant-numeric:tabular-nums;}',
     '.vz-ruler-readout .cmp{display:flex;flex-wrap:wrap;gap:2px 14px;margin-top:2px;font-size:11.5px;opacity:.8;}',
     '.vz-ruler-readout .cmp-k{opacity:.66;}',
     '.vz-ruler-readout .cmp-v{font-variant-numeric:tabular-nums;}',
-    '.vz-ruler-hint{margin:0;font-size:11px;opacity:.58;line-height:1.5;}',
+    '.vz-ruler-hint{margin:0;font-size:10px;opacity:.66;line-height:1.45;}',
     '.vz-ruler-empty{font-size:12px;opacity:.6;padding:18px 4px;}',
     '.vz-ruler-rm .vz-ruler-mark::before,.vz-ruler-rm .vz-ruler-guide{transition:none;}',
     '@media (prefers-reduced-motion: reduce){.vz-ruler-mark::before,.vz-ruler-guide{transition:none;}}',
     '.vz-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;}'
   ].join('');
 
+  /* 宿主容器的可访问语义接管：外部常把挂载位写成 role="img"（静态图语义），
+     但组件内部有可聚焦控件，axe 会报 nested-interactive（role=img 不允许可聚焦后代）。
+     组件是交互控件，这里把宿主 role 换成 group（保留外部 aria-label 作为组名）。
+     注：index.html 若把 .viz-slot 的 role="img" 去掉会更干净，本函数只是组件的自保。 */
+  function adoptHost(el) {
+    if (!el || !el.getAttribute) return;
+    var role = (el.getAttribute('role') || '').toLowerCase();
+    /* img/figure 等静态图语义不允许包含可聚焦控件（axe nested-interactive）；
+       button/link/application 会把整块变成一个可聚焦大控件，同样不符合本组件
+       「一组独立控件」的模型。统一退回中性分组语义，保留宿主的 aria-label 作组名。 */
+    if (role === 'img' || role === 'figure' || role === 'button' || role === 'link' || role === 'application') {
+      el.setAttribute('role', 'group');
+    }
+    if (el.hasAttribute('tabindex')) el.removeAttribute('tabindex');
+  }
+
   function init(container, opts) {
     if (!container || !container.nodeType) return safeStub();
+    adoptHost(container);
     if (container.__vizCentsRuler) { try { container.__vizCentsRuler.destroy(); } catch (e) {} }
     opts = opts || {};
     ensureStyle(STYLE_ID, CSS);
@@ -472,6 +489,7 @@
 
     function update(next) {
       if (destroyed) return;
+      adoptHost(container);
       next = (next && typeof next === 'object') ? next : {};
       var arr = Array.isArray(next.systems) ? next.systems : [];
       state.systems = arr.filter(function (s) { return s && typeof s === 'object'; }).map(function (s, i) {

@@ -101,7 +101,7 @@
       <div class="panel panel-demo">
         <h3 class="panel-title" data-i18n="m1.demoTitle">两条链，同一个终点？</h3>
         <p class="panel-desc" data-i18n="m1.demoDesc">左链每步乘 3/2，右链每步乘 2。</p>
-        <div class="viz-slot viz-tall" id="viz-m1" data-viz="spiral5th" data-viz-height="380" role="img" data-i18n-aria="a11y.chart"></div>
+        <div class="viz-slot viz-tall" id="viz-m1" data-viz="spiral5th" data-viz-height="380" role="group" data-i18n-aria="a11y.chart"></div>
         <div class="controls" role="group" data-i18n-aria="a11y.playGroup">
           <button type="button" class="btn btn-gold" id="m1-step" data-i18n="m1.stepBtn">叠一个五度</button>
           <button type="button" class="btn" id="m1-run" data-i18n="m1.run12">走完 12 步</button>
@@ -115,11 +115,11 @@
           <dl class="readout-grid" id="m1-readouts"></dl>
         </div>
       </div>
-      <aside class="panel panel-note">
+      <div class="panel panel-note" role="note">
         <h3 class="panel-title" data-i18n="m1.explainTitle">这不是计算误差</h3>
         <p class="note-body" data-i18n="m1.explain">3 是质数，2 也是质数……</p>
         <p class="note-eq" aria-label="3^12 / 2^19"><span data-i18n="m1.explainEq">3¹²/2¹⁹</span></p>
-      </aside>
+      </div>
     </div>
     <div class="figures" role="group" data-i18n-aria="a11y.figures">
       <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
@@ -158,11 +158,11 @@
           <dl class="readout-grid" id="m2-readouts"></dl>
         </div>
       </div>
-      <aside class="panel panel-note">
+      <div class="panel panel-note" role="note">
         <h3 class="panel-title" data-i18n="m2.explainTitle">为什么是反比</h3>
         <p class="note-body" data-i18n="m2.explain">频率 f = v/(2L)……</p>
         <p class="note-eq" aria-label="cents formula"><span data-i18n="m2.explainEq">¢ = 1200·log₂(f₂/f₁)</span></p>
-      </aside>
+      </div>
     </div>
     <div class="figures" role="group" data-i18n-aria="a11y.figures">
       <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
@@ -211,12 +211,12 @@
           <dl class="readout-grid" id="m3-readouts"></dl>
         </div>
       </div>
-      <aside class="panel panel-note">
+      <div class="panel panel-note" role="note">
         <h3 class="panel-title" data-i18n="m3.explainTitle">每一步都是 3/2</h3>
         <p class="note-body" data-i18n="m3.explain">生律规则：×3/2 后若超过八度就除 2 折回。</p>
         <h3 class="panel-title panel-title-sub" data-i18n="m3.wolfTitle">「狼音」是什么</h3>
         <p class="note-body" data-i18n="m3.wolfDesc">为了迁就这个缺口，历史上各律制留下某个格外刺耳的音程。</p>
-      </aside>
+      </div>
     </div>
     <div class="figures" role="group" data-i18n-aria="a11y.figures">
       <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
@@ -247,12 +247,12 @@
           <dl class="readout-grid" id="m4-power"></dl>
         </div>
       </div>
-      <aside class="panel panel-note">
+      <div class="panel panel-note" role="note">
         <h3 class="panel-title" data-i18n="m4.litTitle">文献抄录值 vs 本页计算</h3>
         <dl class="readout-grid" id="m4-lit"></dl>
         <h3 class="panel-title panel-title-sub" data-i18n="m4.whyTitle">为什么开方就是解</h3>
         <p class="note-body" data-i18n="m4.whyBody">若八度 = 2 倍频率，等分成 12 份。</p>
-      </aside>
+      </div>
     </div>
 
     <div class="mod-row">
@@ -311,11 +311,11 @@
           <dl class="readout-grid" id="m5-readouts"></dl>
         </div>
       </div>
-      <aside class="panel panel-note">
+      <div class="panel panel-note" role="note">
         <h3 class="panel-title" data-i18n="m5.listTitle">律制一览</h3>
-        <div class="sys-list" id="m5-list" role="group" data-i18n-aria="m5.listTitle"></div>
+        <ul class="sys-list" id="m5-list" data-i18n-aria="m5.listTitle"></ul>
         <p class="note-body note-warn" data-i18n="m5.pendingWarn">本表含文献参考值条目。</p>
-      </aside>
+      </div>
     </div>
     <div class="figures" role="group" data-i18n-aria="a11y.figures">
       <span class="figures-label" data-i18n="a11y.figures">可核验数字</span>
@@ -521,6 +521,16 @@
   <p class="noscript-warn">本作品需要启用 JavaScript 才能运行 —— 全部图形与计算都在页面内实时生成。 / This work needs JavaScript: every graphic and calculation is generated live in the page.</p>
 </noscript>
 
+<!-- 依赖（kernel / audio / viz；按依赖顺序静态接入，缺失时 app.js 自动降级） -->
+<script src="core/tuning.js"></script>
+<script src="audio/synth.js"></script>
+<script src="viz/spiral5th.js"></script>
+<script src="viz/monochord.js"></script>
+<script src="viz/bell.js"></script>
+<script src="viz/centsRuler.js"></script>
+<script src="viz/worldmap.js"></script>
+<script src="viz/isochord.js"></script>
+<script src="viz/spectrum.js"></script>
 <!-- 数据（由 _pipeline/build_data_js.py 生成） -->
 <script src="data/data_tuning.js"></script>
 <script src="data/data_history.js"></script>

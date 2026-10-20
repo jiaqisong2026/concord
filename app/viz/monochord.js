@@ -223,8 +223,25 @@
     '.vz-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;}'
   ].join('');
 
+  /* 宿主容器的可访问语义接管：外部常把挂载位写成 role="img"（静态图语义），
+     但组件内部有可聚焦控件，axe 会报 nested-interactive（role=img 不允许可聚焦后代）。
+     组件是交互控件，这里把宿主 role 换成 group（保留外部 aria-label 作为组名）。
+     注：index.html 若把 .viz-slot 的 role="img" 去掉会更干净，本函数只是组件的自保。 */
+  function adoptHost(el) {
+    if (!el || !el.getAttribute) return;
+    var role = (el.getAttribute('role') || '').toLowerCase();
+    /* img/figure 等静态图语义不允许包含可聚焦控件（axe nested-interactive）；
+       button/link/application 会把整块变成一个可聚焦大控件，同样不符合本组件
+       「一组独立控件」的模型。统一退回中性分组语义，保留宿主的 aria-label 作组名。 */
+    if (role === 'img' || role === 'figure' || role === 'button' || role === 'link' || role === 'application') {
+      el.setAttribute('role', 'group');
+    }
+    if (el.hasAttribute('tabindex')) el.removeAttribute('tabindex');
+  }
+
   function init(container, opts) {
     if (!container || !container.nodeType) return safeStub();
+    adoptHost(container);
     if (container.__vizMonochord) { try { container.__vizMonochord.destroy(); } catch (e) {} }
     opts = opts || {};
     ensureStyle(STYLE_ID, CSS);
@@ -535,6 +552,7 @@
 
     function update(next) {
       if (destroyed) return;
+      adoptHost(container);
       next = (next && typeof next === 'object') ? next : {};
       var ratio = num(next.ratio, NaN);
       state.ratio = ratio;

@@ -186,7 +186,7 @@
     '.vz-bell{position:relative;display:flex;flex-direction:column;gap:10px;width:100%;height:100%;min-height:0;',
     'color:var(--c-light,#F0ECE2);font-family:var(--font-ui,"Segoe UI","Microsoft YaHei",system-ui,sans-serif);font-size:13px;line-height:1.45;}',
     '.vz-bell-row{position:relative;display:flex;align-items:flex-end;gap:14px;padding:26px 4px 2px;overflow-x:auto;',
-    'overflow-y:hidden;flex:1 1 auto;min-height:150px;scrollbar-width:thin;}',
+    'overflow-y:hidden;flex:1 1 auto;min-height:118px;scrollbar-width:thin;}',
     '.vz-bell-row::before{content:"";position:absolute;left:0;right:0;top:14px;height:3px;border-radius:2px;',
     'background:rgba(200,163,90,.4);box-shadow:0 1px 0 rgba(0,0,0,.45);}',
     '.vz-bell-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;flex:0 0 auto;',
@@ -196,7 +196,7 @@
     '.vz-bell-item:hover{transform:translateY(-2px);}',
     '.vz-bell-item:focus-visible{outline:2px solid var(--c-light,#F0ECE2);outline-offset:3px;}',
     '.vz-bell-svg{display:block;overflow:visible;}',
-    '.vz-bell-name{font-size:11px;opacity:.78;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+    '.vz-bell-name{font-size:10.5px;opacity:.82;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
     '.vz-bell-item.is-selected .vz-bell-name{opacity:1;color:var(--c-bronze,#C8A35A);font-weight:700;}',
     '.vz-bell-hook{fill:none;stroke:var(--c-bronze,#C8A35A);stroke-width:2.4;stroke-linecap:round;}',
     '.vz-bell-plate{fill:rgba(240,236,226,.1);stroke:rgba(240,236,226,.3);stroke-width:1.4;}',
@@ -224,7 +224,7 @@
     '@media (prefers-reduced-motion: reduce){',
     '.vz-bell-item{transition:none;}',
     '.vz-bell-item.is-selected .vz-bell-half{animation:none !important;}}',
-    '.vz-bell-panel{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;border-top:1px solid rgba(240,236,226,.12);padding-top:8px;}',
+    '.vz-bell-panel{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;border-top:1px solid rgba(240,236,226,.12);padding-top:6px;}',
     '.vz-bell-tones{display:inline-flex;gap:0;border:1px solid rgba(240,236,226,.24);border-radius:7px;overflow:hidden;}',
     '.vz-bell-tone{font:inherit;font-size:12px;color:var(--c-light,#F0ECE2);background:transparent;border:0;',
     'padding:5px 12px;cursor:pointer;line-height:1.5;}',
@@ -239,13 +239,30 @@
     '.vz-bell-num .v{font-size:13px;color:var(--c-cyan,#6E8FA3);font-variant-numeric:tabular-nums;}',
     '.vz-bell-num.is-front .v{color:var(--c-bronze,#C8A35A);}',
     '.vz-bell-diff .v{color:var(--c-light,#F0ECE2);font-weight:600;}',
-    '.vz-bell-hint{margin:0;font-size:11.5px;opacity:.62;line-height:1.5;}',
+    '.vz-bell-hint{margin:0;font-size:10.5px;opacity:.68;line-height:1.45;}',
     '.vz-bell-empty{font-size:12px;opacity:.6;padding:18px 4px;}',
     '.vz-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;}'
   ].join('');
 
+  /* 宿主容器的可访问语义接管：外部常把挂载位写成 role="img"（静态图语义），
+     但组件内部有可聚焦控件，axe 会报 nested-interactive（role=img 不允许可聚焦后代）。
+     组件是交互控件，这里把宿主 role 换成 group（保留外部 aria-label 作为组名）。
+     注：index.html 若把 .viz-slot 的 role="img" 去掉会更干净，本函数只是组件的自保。 */
+  function adoptHost(el) {
+    if (!el || !el.getAttribute) return;
+    var role = (el.getAttribute('role') || '').toLowerCase();
+    /* img/figure 等静态图语义不允许包含可聚焦控件（axe nested-interactive）；
+       button/link/application 会把整块变成一个可聚焦大控件，同样不符合本组件
+       「一组独立控件」的模型。统一退回中性分组语义，保留宿主的 aria-label 作组名。 */
+    if (role === 'img' || role === 'figure' || role === 'button' || role === 'link' || role === 'application') {
+      el.setAttribute('role', 'group');
+    }
+    if (el.hasAttribute('tabindex')) el.removeAttribute('tabindex');
+  }
+
   function init(container, opts) {
     if (!container || !container.nodeType) return safeStub();
+    adoptHost(container);
     if (container.__vizBell) { try { container.__vizBell.destroy(); } catch (e) {} }
     opts = opts || {};
     ensureStyle(STYLE_ID, CSS);
@@ -441,8 +458,8 @@
       for (var k = 0; k < list.length; k++) {
         var b = list[k];
         var sizeNorm = clamp(num(b.size, 1) / maxSize, 0.55, 1.35);
-        var w = Math.round(46 + 26 * sizeNorm);
-        var h = Math.round(w * 1.5);
+        var w = Math.round(42 + 22 * sizeNorm);
+        var h = Math.round(w * 1.48);
         var btn = mk('button', 'vz-bell-item');
         btn.type = 'button';
         btn.setAttribute('role', 'radio');
@@ -475,6 +492,7 @@
 
     function update(next) {
       if (destroyed) return;
+      adoptHost(container);
       next = (next && typeof next === 'object') ? next : {};
       var arr = Array.isArray(next.bells) ? next.bells : [];
       state.bells = arr.filter(function (b) { return b && typeof b === 'object'; })

@@ -37,7 +37,8 @@
   var SVGNS = 'http://www.w3.org/2000/svg';
   var STYLE_ID = 'vz-isochord-style';
   var LOG2 = Math.log(2);
-  var NOTE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B']; /* 通用音名，非律制数据 */
+  /* 音名口径按 M5 中庸律惯例取降号侧（wolf 在 G♯–E♭）：不用 D♯/A♯/E♯ */
+  var NOTE_NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'B♭', 'B'];
 
   /* ---------- 工具 ---------- */
   function isNum(v) { return typeof v === 'number' && isFinite(v); }
@@ -224,8 +225,25 @@
     '.vz-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;}'
   ].join('');
 
+  /* 宿主容器的可访问语义接管：外部常把挂载位写成 role="img"（静态图语义），
+     但组件内部有可聚焦控件，axe 会报 nested-interactive（role=img 不允许可聚焦后代）。
+     组件是交互控件，这里把宿主 role 换成 group（保留外部 aria-label 作为组名）。
+     注：index.html 若把 .viz-slot 的 role="img" 去掉会更干净，本函数只是组件的自保。 */
+  function adoptHost(el) {
+    if (!el || !el.getAttribute) return;
+    var role = (el.getAttribute('role') || '').toLowerCase();
+    /* img/figure 等静态图语义不允许包含可聚焦控件（axe nested-interactive）；
+       button/link/application 会把整块变成一个可聚焦大控件，同样不符合本组件
+       「一组独立控件」的模型。统一退回中性分组语义，保留宿主的 aria-label 作组名。 */
+    if (role === 'img' || role === 'figure' || role === 'button' || role === 'link' || role === 'application') {
+      el.setAttribute('role', 'group');
+    }
+    if (el.hasAttribute('tabindex')) el.removeAttribute('tabindex');
+  }
+
   function init(container, opts) {
     if (!container || !container.nodeType) return safeStub();
+    adoptHost(container);
     if (container.__vizIsochord) { try { container.__vizIsochord.destroy(); } catch (e) {} }
     opts = opts || {};
     ensureStyle(STYLE_ID, CSS);
@@ -237,6 +255,7 @@
     var destroyed = false, ro = null, live = null, focusIdx = 0, activeIdx = null;
     var root = null, head = null, titleEl = null, subEl = null, stage = null, readout = null, hintEl = null, emptyEl = null;
     var items = [];      /* 可聚焦元素（品 / 键 / 采样点） */
+    var fretCents = [];  /* 指板模式实际参与排布的品丝音分（已剔除首项空弦） */
     var baselineEls = []; /* 可选 */
 
     clear(container);
@@ -305,13 +324,15 @@
       var brTag = mk('div', 'vz-iso-tag', { text: dd.bridge });
       brTag.style.right = '12px'; brTag.style.top = '-2px';
       board.appendChild(brTag);
-      /* 空弦（位置 0） */
+      /* 空弦（位置 0）：若 cents[0] ≈ 0，说明数据把空弦也列进来了 → 从第 2 项起算品丝 */
       var openBtn = makeFretBtn(null, 0, dd.open, 0, true);
       board.appendChild(openBtn);
       items.push(openBtn);
-      /* 品丝：按音分位置 → 距弦枕比例 d/L = 1 - 2^(-c/1200) */
-      for (var i = 0; i < cents.length; i++) {
-        var c = num(cents[i], NaN);
+      var first = num(cents[0], NaN);
+      var skipFirst = isFinite(first) && Math.abs(first) < 0.5 && cents.length > 1;
+      fretCents = skipFirst ? cents.slice(1) : cents.slice();
+      for (var i = 0; i < fretCents.length; i++) {
+        var c = num(fretCents[i], NaN);
         if (!isFinite(c)) continue;
         var frac = clamp(1 - Math.pow(2, -c / 1200), 0.015, 0.97);
         var b = makeFretBtn(i, frac * 100, String(i + 1), c);
@@ -355,7 +376,7 @@
     function showFretRead(i) {
       var dd = D();
       if (i < 0) { setReadout([readText(dd.openRead)]); return; }
-      var c = num(centsArr()[i], NaN);
+      var c = num(fretCents[i], NaN);
       var dev = isFinite(c) ? c - Math.round(c / 100) * 100 : NaN;
       setReadout(buildRead(dd.fretRead, {
         n: i + 1,
@@ -661,6 +682,7 @@
 
     function update(next) {
       if (destroyed) return;
+      adoptHost(container);
       next = (next && typeof next === 'object') ? next : {};
       var mode = (next.mode === 'piano' || next.mode === 'voice' || next.mode === 'fret') ? next.mode : 'fret';
       var cents = Array.isArray(next.cents) ? next.cents.map(function (v) { return num(v, NaN); }).slice(0, 64) : [];

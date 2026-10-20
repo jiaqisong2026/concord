@@ -209,8 +209,25 @@
     return d;
   }
 
+  /* 宿主容器的可访问语义接管：外部常把挂载位写成 role="img"（静态图语义），
+     但组件内部有可聚焦控件，axe 会报 nested-interactive（role=img 不允许可聚焦后代）。
+     组件是交互控件，这里把宿主 role 换成 group（保留外部 aria-label 作为组名）。
+     注：index.html 若把 .viz-slot 的 role="img" 去掉会更干净，本函数只是组件的自保。 */
+  function adoptHost(el) {
+    if (!el || !el.getAttribute) return;
+    var role = (el.getAttribute('role') || '').toLowerCase();
+    /* img/figure 等静态图语义不允许包含可聚焦控件（axe nested-interactive）；
+       button/link/application 会把整块变成一个可聚焦大控件，同样不符合本组件
+       「一组独立控件」的模型。统一退回中性分组语义，保留宿主的 aria-label 作组名。 */
+    if (role === 'img' || role === 'figure' || role === 'button' || role === 'link' || role === 'application') {
+      el.setAttribute('role', 'group');
+    }
+    if (el.hasAttribute('tabindex')) el.removeAttribute('tabindex');
+  }
+
   function init(container, opts) {
     if (!container || !container.nodeType) return safeStub();
+    adoptHost(container);
     if (container.__vizSpiral5th) { try { container.__vizSpiral5th.destroy(); } catch (e) {} }
     opts = opts || {};
     ensureStyle(STYLE_ID, CSS);
@@ -276,8 +293,8 @@
         var it = items[i];
         var textW = Math.min(130, it.text.length * 6.4 + 6);
         var cand = null;
-        for (var attempt = 0; attempt < 5; attempt++) {
-          var off = (it.baseOff || 17) + attempt * 12;
+        for (var attempt = 0; attempt < 3; attempt++) {
+          var off = (it.baseOff || 17) + attempt * 10;
           var lx = clamp(it.x + it.dx * off, textW / 2 + 2, g.w - textW / 2 - 2);
           var ly = clamp(it.y + it.dy * off, 9, g.h - 9);
           var c = { x: lx, y: ly, w: textW, h: 13 };
@@ -420,7 +437,7 @@
         for (var q = 0; q <= b; q++) stepCum += deltas[q];
         var hz = num(step.hz, NaN);
         var albl = tpl(dd.announce, {
-          i: b + 1, name: sname, cum: fmt(stepCum, 1),
+          i: (nFull > 1 && Math.abs(num(full[0].cents, 0)) < 0.5) ? b : b + 1, name: sname, cum: fmt(stepCum, 1),
           extra: isFinite(hz) ? ('，' + fmt(hz, 2) + ' Hz') : ''
         });
         var btn = mk('button', 'vz-spiral-node');
@@ -441,16 +458,18 @@
         }
       }
 
-      /* 8) 说明文字 */
+      /* 8) 说明文字：首点若为起点（增量≈0），「步数」按 n-1 计，避免把起点算成一步 */
       var oct = Math.floor(total / 1200);
       var rem = total - oct * 1200;
+      var originFirst = (nFull > 1 && isFinite(deltas[0]) && Math.abs(deltas[0]) < 0.5);
+      var stepCount = originFirst ? nFull - 1 : nFull;
       if (ghostMode) {
         caption.textContent = tpl(dd.ghostCaption, {
-          n: nFull, rev: nRev, gap: fmt(gap, 2)
+          n: stepCount, rev: Math.max(0, nRev - (originFirst ? 1 : 0)), gap: fmt(gap, 2)
         });
       } else {
         caption.textContent = tpl(dd.caption, {
-          n: nFull, cum: fmt(total, 2), oct: oct, rem: fmt(rem, 2), gap: fmt(gap, 2)
+          n: stepCount, cum: fmt(total, 2), oct: oct, rem: fmt(rem, 2), gap: fmt(gap, 2)
         });
       }
       if (reduced || !state.playing) root.classList.remove('is-playing');
@@ -550,6 +569,7 @@
 
     function update(next) {
       if (destroyed) return;
+      adoptHost(container);
       next = (next && typeof next === 'object') ? next : {};
       var arr = Array.isArray(next.steps) ? next.steps : [];
       state.steps = arr.filter(function (s) { return s && typeof s === 'object'; }).slice(0, 64);
