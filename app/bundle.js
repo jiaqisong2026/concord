@@ -8990,12 +8990,12 @@ window.__metrics = {
   "app_version": "1.0.0"
  },
  "live": {
-  "url": "https://secret-justice.github.io/concord/app/",
+  "url": "https://jiaqisong2026.github.io/concord/app/",
   "http": 200,
   "axe": 0,
   "fps_mean": 60.01,
-  "fps_min": 59.57,
-  "heap_growth_mb": -0.33,
+  "fps_min": 59.54,
+  "heap_growth_mb": -0.21,
   "runtime_errors": 0
  },
  "video": {
@@ -9007,7 +9007,7 @@ window.__metrics = {
  },
  "pack": {
   "entries": 58,
-  "size_mb": 10.87,
+  "size_mb": 10.69,
   "pdfs": 27,
   "screenshots": 10,
   "anon_hits": 0
@@ -9048,7 +9048,7 @@ window.__metrics = {
   "evidence": "metrics.json",
   "audio": "verify_audio.js"
  },
- "_fingerprint": "sha256:16d704f910d0ea20"
+ "_fingerprint": "sha256:2bc3776ab1a9f0d2"
 };
 ;
 /* ===== 15. data/deps.js ===== */
@@ -9991,7 +9991,20 @@ window.__deps = {
     try { W.localStorage.setItem(k, v); } catch (e) { /* 静默 */ }
   }
 
+  function paramLang() {
+    // URL 语言参数：?lang=en / ?lang=zh（入口页「English」按钮、英文二维码用）
+    var q = (W.location && W.location.search) || '';
+    var m = /[?&]lang=(zh|en)\b/i.exec(q);
+    if (!m) {
+      var h = (W.location && W.location.hash) || '';
+      m = /[#&]lang=(zh|en)\b/i.exec(h);
+    }
+    return m ? m[1].toLowerCase() : null;
+  }
+
   function detectLang() {
+    var fromUrl = paramLang();
+    if (fromUrl) { safeSet(LS_KEY, fromUrl); return fromUrl; }
     var saved = safeGet(LS_KEY);
     if (saved === 'zh' || saved === 'en') return saved;
     var nav = (W.navigator && W.navigator.language) || '';
